@@ -1,5 +1,5 @@
 {
-    "name": "alireza-zojaji/zoj_tools",
+    "name": "alireza-zojaji/zoj-tools",
     "type": "library",
     "description": "PHP tools for handling forms & views",
     "keywords": ["zj_tools", "dbView", "dbFrorm", "dbGrid"],
@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Alireza-Zojaji\\zoj_tools\\": "src/"
+            "Alireza-Zojaji\\zoj-tools\\": "src/"
         }
     },
     "minimum-stability" : "stable"

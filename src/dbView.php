@@ -1,10 +1,10 @@
 <?
 // 19 Mar 2025: Developing completed!
 
-namespace zoj_tools;
+namespace zoj-tools;
 
-use zoj_tools\farsiTools\fasiNumber;
-use zoj_tools\numberTools\formatNumber;
+use zoj-tools\farsiTools\fasiNumber;
+use zoj-tools\numberTools\formatNumber;
 
 class dbView {
 	public $query;

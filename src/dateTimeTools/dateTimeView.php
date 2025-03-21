@@ -1,9 +1,9 @@
 <?
 // 19 Mar 2025: Detached from dateTimeFormat class.
 
-namespace zoj_tools\dateTimeTools;
+namespace zoj-tools\dateTimeTools;
 
-use zoj_tools\farsiTools\fasiNumber;
+use zoj-tools\farsiTools\fasiNumber;
 
 class dateTimeView extends shamsiDate {
     

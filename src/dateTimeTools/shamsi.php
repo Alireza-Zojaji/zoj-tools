@@ -1,7 +1,7 @@
 <?
 // 19 Mar 2025: Detached from dateTimeFormat class.
 
-namespace zoj_tools\dateTimeTools;
+namespace zoj-tools\dateTimeTools;
 
 class shamsiDate {
     protected static function sh2m(&$Y, &$M, &$D) {
