@@ -22,10 +22,10 @@
 // 17 Dec 2016: Fixed a bug in show_date_input function related to start year.
 // 02 Oct 2018: Added onchange parameter to show_date_input function.
 
-namespace zoj-tools\dateTimeTools;
+namespace ZojTools\dateTimeTools;
 
-use zoj-tools\farsiTools\farsiNumber;
-use zoj-tools\dateTimeTools\shamsiDate;
+use ZojTools\farsiTools\farsiNumber;
+use ZojTools\dateTimeTools\shamsiDate;
 
 class dateTimeFormat extends shamsiDate {
     

@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Alireza-Zojaji\\zoj-tools\\": "src/"
+            "ZojTools\\": "src/"
         }
     },
     "minimum-stability" : "stable"
