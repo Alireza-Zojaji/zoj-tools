@@ -1,0 +1,24 @@
+{
+    "name": "zojaji/php",
+    "type": "library",
+    "description": "PHP tools for handling forms & views",
+    "keywords": ["zj_tools", "dbView", "dbFrorm", "dbGrid"],
+    "homepage": "http://github.com/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alireza Zojaji",
+            "email": "zojaji@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "mySql": ">=5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "zojaji\\": "src/"
+        }
+    },
+    "minimum-stability" : "stable"
+}
