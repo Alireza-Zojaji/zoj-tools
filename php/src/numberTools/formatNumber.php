@@ -1,5 +1,5 @@
 <?
-namespace zjTools\numberTools;
+namespace zoj_tools\numberTools;
 
 class formatNumber {
     public static function split($number, $separator = ',') {

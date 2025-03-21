@@ -1,5 +1,5 @@
 <?
-namespace zjTools\farsiTools;
+namespace zoj_tools\farsiTools;
 
 class farsiNumber {
     private static $fa_num = array('۱','۲','۳','۴','۵','۶','۷','۸','۹','۰');
