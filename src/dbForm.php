@@ -64,8 +64,6 @@
 // 22 Mar 2025: Changed to composer compatible.
 namespace ZojTools;
 
-use ZojTools\farsiTools\farsiNumber;
-use ZojTools\numberTools\formatNumber;
 use ZojTools\dateTimeTools\dateTimeFormat;
 use ZojTools\dbBase\dbBase;
 use ZojTools\stringTools\stringTools;
