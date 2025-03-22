@@ -34,8 +34,8 @@ class dateTimeFormat extends shamsiDate {
     	$time_stamp = self::str_to_time($field_value);
     	$dow = date("w", $time_stamp);
     	$farsi_dow = self::day_of_week($dow);
-    	$farsi_date = self::get_farsi_date($time_stamp, $false, $farsi);
-    	$farsi_time = self::get_farsi_time($time_stamp, $false, $farsi);
+    	$farsi_date = self::get_farsi_date($time_stamp, false, $farsi);
+    	$farsi_time = self::get_farsi_time($time_stamp, false, $farsi);
     	return ("$farsi_dow $farsi_date ساعت $farsi_time");
     }
     
@@ -269,7 +269,7 @@ class dateTimeFormat extends shamsiDate {
     	//echo $timestr;
     	$items = preg_split('/-/', $timestr);
     	reset($items);
-    	while (list($key, $val) = each($items)) {
+    	foreach ($items as $key => $val) {
     		if (strlen($val) == 4) $y = $val;
     		if (strlen($val) == 3) $m = $val;
     		if (strlen($val) == 2 || strlen($val) == 1) $d = $val;
@@ -284,7 +284,8 @@ class dateTimeFormat extends shamsiDate {
     	//  $items=preg_split('/-/',$timestr);
     	$itemss = preg_split('/\s+/', $timestr);
     	reset($itemss);
-    	while (list($key, $val) = each($itemss)) {
+
+    	foreach ($itemss as $key => $val) {
     		if (strlen($val) == 4) $y = $val;
     		if (strlen($val) == 3) $m = $val;
     		if (strlen($val) == 2 || strlen($val) == 1) $d = $val;

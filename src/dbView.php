@@ -3,38 +3,22 @@
 
 namespace ZojTools;
 
-use ZojTools\farsiTools\fasiNumber;
+use ZojTools\farsiTools\farsiNumber;
 use ZojTools\numberTools\formatNumber;
+use ZojTools\dateTimeTools\dateTimeFormat;
 
 class dbView {
 	public $query;
 	public $db_link;
 	public $row_count = 0;
-
-	public $_vars_set; //
 	public $border;
 	public $border_color;
 	public $cellpadding;
 	public $cellspacing;
 	public $comment_array;
-	public $default_date_value; //
 	public $description_array;
-	public $dont_include_form_tag; //
 	public $even_bg_color;
-	public $field_count; //
-	public $field_height_array; //
-	public $field_length_array; //
-	public $field_name_array;
-	public $field_show_class;
-	public $field_show_style;
-	public $field_type_array;
-	public $field_unicode_array; //
-	public $field_value_array; //
-	public $field_option_array; //
-	public $not_in_table; //
 	public $odd_bg_color;
-	public $show_type_array; //
-	public $span_id_array; //
 	public $tb_style;
 	public $tb_class;
 	public $tb_width;
@@ -48,12 +32,9 @@ class dbView {
 	public $td_width_2;
 	public $tr_class;
 	public $tr_style;
-	public $auto_field_count; //
-	public $check_value_array; //
 	public $tr_bgcolor_array;
 	public $td1_bgcolor_array;
 	public $td2_bgcolor_array;
-	private $query_row;
 	public $empty_result = false;
 	public $error = 0;
 	public $error_message = "";
@@ -61,29 +42,34 @@ class dbView {
 	public $button_class;
 	public $button_labels;
 	public $button_onclicks;
+	public $label_array;
+	private $query_row;
 	private $direction_array;
 	private $alignment_array;
+	private $odd_row = true;
+	private $content_array;
 
 	//consructor
 	public function __construct($db_link, $query) {
 		$this->query = $query;
 		$this->db_link = $db_link;
 		$this->tb_width = "100%";
-		$this->correct_quote_char();
+		//$this->correct_quote_char();
     	$query_table = $this->execute($query);
     	$this->error = mysqli_errno($this->db_link);
     	if ($this->error)
-    	    $this->error_message = $this->error($this->db_link);
-    	$this->query_row = mysqli_fetch_array($this->db_link, $query_table);
-    	if (! $thos->query_row)
-    	    $empty_result = true;
+    	    $this->error_message = mysqli_error($this->db_link);
+    	else 
+    	    $this->query_row = mysqli_fetch_array($query_table);
+    	if (! $this->query_row)
+    	    $this->empty_result = true;
 	}
 
 	public function addRow($description, $content, $direction = "rtl", $alignment = "right") {
-		$description_array[$this->row_count] = $description;
-		$content_array[$this->row_count] = $content;
+		$this->description_array[$this->row_count] = $description;
+		$this->content_array[$this->row_count] = $content;
 		if ($direction != "rtl")
-		    $this->durection_array = $direction;
+		    $this->direction_array = $direction;
 		if ($alignment != "right")
 		    $this->alignment_array = $alignment;
 		$this->row_count ++;
@@ -94,7 +80,7 @@ class dbView {
 		try {
 			$result = mysqli_query($this->db_link, $query);
 		}
-		catch(Exception $e) {
+		catch(\Exception $e) {
 			$result = false;
 		}
 		return ($result);
@@ -184,7 +170,12 @@ class dbView {
 	//internal use
 	private function _show_table_body() {
 		$this->_show_table();
-		for ($i = 0; $i < $this->field_count; $i++) {
+		for ($i = 0; $i < $this->row_count; $i++) {
+		    if ($this->tr_bgcolor_array[$i])
+		        $bg_color = $this->tr_bgcolor_array[$i];
+		    else
+		        $bg_color = ($this->odd_row ? $this->odd_bg_color : $this ->even_bg_color);
+		    $this->odd_row = ! $this->odd_row;
 			$this->_show_tr($this->tr_bgcolor_array[$i]);
 			$this->_show_td($i, 1);
 			$this->_show_description($i);
@@ -210,15 +201,11 @@ class dbView {
 	}
 
 	//internal use
-	private function _show_description($row, $repeat = 0) {
-		if ($repeat) {
-			if ($this->redescription_array[$row] != '') echo $this->redescription_array[$row] . ':';
-			else echo "&nbsp;";
-		}
-		else {
-			if ($this->description_array[$row] != '') echo $this->description_array[$row] . ':';
-			else echo "&nbsp;";
-		}
+	private function _show_description($row) {
+		if ($this->description_array[$row] != '') 
+		    echo $this->description_array[$row] . ':';
+		else 
+		    echo "&nbsp;";
 	}
 
     //internal use
@@ -226,10 +213,10 @@ class dbView {
         if ($this->empty_result)
             return(false);
         $style="";
-        if ($direction_array[$col_num] != "")
-            $style .= "direction: {$direction_array[$col_num]};";
-        if ($alignment_array[$col_num] != "")
-            $style .= "text-align: {$alignment_array[$col_num]};";
+        if ($this->direction_array[$col_num] != "")
+            $style .= "direction: {$this->direction_array[$col_num]};";
+        if ($this->alignment_array[$col_num] != "")
+            $style .= "text-align: {$this->alignment_array[$col_num]};";
         if ($style != "")
             echo '<span style="'.$style.'">';
         else
@@ -300,7 +287,7 @@ class dbView {
     		if ($this->query_row[$field_name] == "") 
     		    $date_str = "";
     		else 
-    		    $date_str = str2date($this->query_row[$field_name]);
+    		    $date_str = dateTimeFormat::str2date($this->query_row[$field_name]);
     		$content = substr($content, 0, $pos) . $date_str . substr($content, $i + 1, strlen($content));
     	}
     	while (($pos = strpos($content, '#d#')) !== false) { // #d#field_name# Outputs the field value converted to Farsi character hegira date.
@@ -403,8 +390,7 @@ class dbView {
 	private function _show_buttons() {
 	    foreach($this->button_labels as $key => $val) {
 ?>
-<button name="<?=
-$button_name?>" onclick="<?=
+<button onclick="<?=
 $this->button_onclicks[$key] ?>" <?=
 ($this->button_style ? 'style="' . $this->button_style . '"' : "") ?> <?=
 ($this->button_class ? 'class="' . $this->button_class . '"' : '') ?>><?=
