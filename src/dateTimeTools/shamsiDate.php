@@ -4,7 +4,7 @@
 namespace ZojTools\dateTimeTools;
 
 class shamsiDate {
-    protected static function sh2m(&$Y, &$M, &$D) {
+    public static function sh2m(&$Y, &$M, &$D) {
     	$A[1] = 20;
     	$A[2] = 20;
     	$A[3] = 21;
@@ -46,7 +46,7 @@ class shamsiDate {
     	return 1;
     }
     
-    protected static function m2sh(&$Y, &$M, &$D) {
+    public static function m2sh(&$Y, &$M, &$D) {
     	$A[1] = 10;
     	$A[2] = 11;
     	$A[3] = 9;
