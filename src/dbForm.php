@@ -69,7 +69,7 @@ use ZojTools\dbBase\dbBase;
 use ZojTools\stringTools\stringTools;
 
 // This class provides ability to create forms for edit
-class dbform {
+class dbForm {
     public $on_submit;
 	public $debug;
 	public $_error_message;
@@ -213,17 +213,45 @@ class dbform {
     public $field_class_array;
 
 	//consructor
-	public function __construct($db_link, $table_name, $field_count = 0) {
+	public function __construct($db_link, $table_name) {
 		global $_POST;
 		$this->tb_width = "100%";
 		$this->db_link = $db_link;
 		$this->table_name = $table_name;
-		$this->field_count = $field_count;
+		$this->field_count = 0;
 		$this->general_error_message = "Error";
 		$this->star_pos = 'before title';
 		$this->correct_table_name();
 		$this->correct_quote_char();
 		//      $this->update_href=
+		
+	}
+
+	public function addField(
+		$field_name, 
+		$field_type, 
+		$show_type, 
+		$description, 
+		$field_length = 10,
+		$null = true, 
+		$ltr = false, 
+		$show_star = false, 
+		$star_pos = "after field",
+		
+		) {
+			$this->field_name_array[$this->field_count] = $field_name;
+			$this->field_type_array[$this->field_count] = $field_type;
+			$this->show_type_array[$this->field_count] = $show_type;
+			$this->description_array[$this->field_count] = $description;
+			$this->field_length_array[$this->field_count] = $field_length;
+			$this->field_nul_array[$this->field_count] = $null;
+			$this->field_ltr[$this->field_count] = $ltr;
+			$this->
+
+		$fr->field_ltr[$i]=true;
+		$fr->show_star=true;
+		$fr->star_pos="after field";
+		$fr->comment_array[$i]='<p class="fcomment"">شما با این شماره موبایل در سیستم شناسایی می‌شوید.</p>';
 		
 	}
 
@@ -313,7 +341,8 @@ class dbform {
 
 	//do the operation of the form based on the state of the form
 	public function initialize() {
-		if ($this->auto_field_count) $this->field_count = count($this->field_name_array);
+		if ($this->auto_field_count) 
+			$this->field_count = count($this->field_name_array);
 		global $_POST, $_GET;
 		if (!$this->_publics_set && $_POST["submit"] != "") {
 			if (isset($this->on_submit)) {
@@ -330,8 +359,10 @@ class dbform {
 					if ($h != '' && $n != '') {
 						$this->field_value_array[$i] = $this->field_time_date_part[$i] . " $h:$n";
 					}
-					else if ($h . $n == '') $this->field_value_array[$i] = "NULL";
-					else $this->field_value_array[$i] = "Error";
+					else if ($h . $n == '') 
+						$this->field_value_array[$i] = "NULL";
+					else 
+						$this->field_value_array[$i] = "Error";
 				}
 				if ($this->show_type_array[$i] == "D" || $this->show_type_array[$i] == "d") {
 					$y = $this->field_name_array[$i] . "_y";
@@ -345,8 +376,10 @@ class dbform {
 						//              $this->field_value_array[$i]=month_name($m)." $d $y";
 						$this->field_value_array[$i] = "$y-$m-$d";
 					}
-					else if ($y . $m . $d == '') $this->field_value_array[$i] = "NULL";
-					else $this->field_value_array[$i] = "Error";
+					else if ($y . $m . $d == '') 
+						$this->field_value_array[$i] = "NULL";
+					else 
+						$this->field_value_array[$i] = "Error";
 				}
 				if ($this->show_type_array[$i] == "DM" || $this->show_type_array[$i] == "dm") {
 					$y = $this->field_name_array[$i] . "_y";
@@ -363,8 +396,10 @@ class dbform {
 						dateTimeFormat::sh2m($y, $m, $d);
 						$this->field_value_array[$i] = "$y-$m-$d $h:$n";
 					}
-					else if ($y . $m . $d == '') $this->field_value_array[$i] = "NULL";
-					else $this->field_value_array[$i] = "Error";
+					else if ($y . $m . $d == '') 
+						$this->field_value_array[$i] = "NULL";
+					else 
+						$this->field_value_array[$i] = "Error";
 				}
 				if ($this->show_type_array[$i] == "G" || $this->show_type_array[$i] == "g") {
 					$y = $this->field_name_array[$i] . "_y";
@@ -378,21 +413,22 @@ class dbform {
 						//              $this->field_value_array[$i]=month_name($m)." $d $y";
 						
 					}
-					else if ($y . $m . $d == '') $this->field_value_array[$i] = "NULL";
-					else $this->field_value_array[$i] = "Error";
+					else if ($y . $m . $d == '') 
+						$this->field_value_array[$i] = "NULL";
+					else 
+						$this->field_value_array[$i] = "Error";
 				}
-				if ($this->field_value_array[$i] == "" && $this->field_type_array[$i] == "I") $this->field_value_array[$i] = 'NULL';
+				if ($this->field_value_array[$i] == "" && $this->field_type_array[$i] == "I") 
+					$this->field_value_array[$i] = 'NULL';
 			}
 		}
-		if ($_POST["cancel"] != "") //cancel
-		{
+		if ($_POST["cancel"] != "") { //cancel
 			$this->_redirected = 1;
 			$this->state = "cancel";
 		}
 		//      else if ($_POST["submit"]!="")
 		//      else if (count($_POST)>0 && $_POST["delete"]=="" && $_POST["delete_x"]=="" && $_POST["cancel"]=="" && $_POST["cancel_x"]=="" && $_POST["reset"]=="" && $_POST["reset_x"]=="")
-		else if ($_POST["delete"] != "") //delete
-		{
+		else if ($_POST["delete"] != "") {//delete
 			if (isset($this->on_before_delete)) {
 				$fnc = $this->on_before_delete;
 				$this->before_delete_result = $fnc();
@@ -508,19 +544,22 @@ class dbform {
 			//has error
 			{
 				$this->_redirected = 0;
-				if ($this->error_type == 'Repeat') $this->_error_message = $this->message_before . $this->redescription_array[$error] . $this->message_after;
-				else if ($this->error_type == 'Max') $this->_error_message = $this->message_before . $this->message_max_value . " " . $this->description_array[$error] . $this->message_after;
-				else if ($this->error_type == 'Min') $this->_error_message = $this->message_before . $this->message_min_value . " " . $this->description_array[$error] . $this->message_after;
-				else if ($this->error_type == 'Custom') $this->_error_message = $this->custom_error_message_array[$error];
-				else $this->_error_message = $this->message_before . $this->description_array[$error] . $this->message_after;
+				if ($this->error_type == 'Repeat') 
+					$this->_error_message = $this->message_before . $this->redescription_array[$error] . $this->message_after;
+				else if ($this->error_type == 'Max') 
+					$this->_error_message = $this->message_before . $this->message_max_value . " " . $this->description_array[$error] . $this->message_after;
+				else if ($this->error_type == 'Min') 
+					$this->_error_message = $this->message_before . $this->message_min_value . " " . $this->description_array[$error] . $this->message_after;
+				else if ($this->error_type == 'Custom') 
+					$this->_error_message = $this->custom_error_message_array[$error];
+				else 
+					$this->_error_message = $this->message_before . $this->description_array[$error] . $this->message_after;
 			}
 		}
-		else
-		//select
+		else //select
 		{
-			if ($_GET[$this
-				->code_public] != "" && !$this->not_initialize_fields) //not select for inserting
-			$this->select();
+			if ($_GET[$this->code_public] != "" && !$this->not_initialize_fields) //not select for inserting
+				$this->select();
 			$this->state = "select";
 		}
 		if ($this->_redirected) {
@@ -600,17 +639,25 @@ class dbform {
 							$file_name = $_FILES[$this->field_name_array[$i]]['name'];
 							$ext = '';
 							$pos = strrpos($file_name, '.');
-							if ($pos !== false) $ext = substr($file_name, $pos, strlen($file_name));
-							if ($this->upload_file_without_extension) $file_name = $this->upload_file_name[$i];
-							else $file_name = $this->upload_file_name[$i] . $ext;
+							if ($pos !== false) 
+								$ext = substr($file_name, $pos, strlen($file_name));
+							if ($this->upload_file_without_extension) 
+								$file_name = $this->upload_file_name[$i];
+							else 
+								$file_name = $this->upload_file_name[$i] . $ext;
 						}
 						$directory_exists = false;
-						if (file_exists($this->upload_directory[$i])) $directory_exists = true;
-						else $directory_exists = mkdir($this->upload_directory[$i]);
-						if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) $file_name = stringTools::get_unique_id() . '_' . $file_name;
+						if (file_exists($this->upload_directory[$i])) 
+							$directory_exists = true;
+						else 
+							$directory_exists = mkdir($this->upload_directory[$i]);
+						if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) 
+							$file_name = stringTools::get_unique_id() . '_' . $file_name;
 						$file_created = move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'], $this->upload_directory[$i] . '\\' . $file_name);
-						if ($this->upload_save_in_db == "original") $this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
-						else $this->field_value_array[$i] = $file_name;
+						if ($this->upload_save_in_db == "original") 
+							$this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
+						else 
+							$this->field_value_array[$i] = $file_name;
 					}
 				}
 				else {
@@ -623,14 +670,17 @@ class dbform {
 					$field_name_str .= ",";
 					$field_value_str .= ",";
 				}
-				if ($this->use_md5_array[$i]) $this->field_value_array[$i] = md5($this->field_value_array[$i]);
+				if ($this->use_md5_array[$i]) 
+					$this->field_value_array[$i] = md5($this->field_value_array[$i]);
 				$field_name_str .= $this->field_name_array[$i];
 				if (($this->field_type_array[$i] == "S" || $this->field_type_array[$i] == "s" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) && (!($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") || !$this->upload_db_array[$i])) {
-					if ($this->field_unicode_array[$i]) $field_value_str .= "N";
+					if ($this->field_unicode_array[$i]) 
+						$field_value_str .= "N";
 					$field_value_str .= "'";
 				}
 				$field_value_str .= $this->field_value_array[$i];
-				if (($this->field_type_array[$i] == "S" || $this->field_type_array[$i] == "s" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) && (!($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") || !$this->upload_db_array[$i])) $field_value_str .= "'";
+				if (($this->field_type_array[$i] == "S" || $this->field_type_array[$i] == "s" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) && (!($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") || !$this->upload_db_array[$i])) 
+					$field_value_str .= "'";
 			}
 			$first = false;
 		}
@@ -661,7 +711,8 @@ class dbform {
 			if ($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") {
 				if ($_FILES[$this->field_name_array[$i]]['name'] != "") {
 					if ($this->upload_db_array[$i]) {
-						if (!$first) $query .= ',';
+						if (!$first) 
+							$query .= ',';
 						$first = false;
 						$query .= $this->field_name_array[$i] . "=";
 						$uploaded_file_content = implode("", file($_FILES[$this->field_name_array[$i]]['tmp_name']));
@@ -681,18 +732,26 @@ class dbform {
 						else {
 							$file_name = $_FILES[$this->field_name_array[$i]]['name'];
 							$ext = '';
-							if ($pos = strrpos($file_name, '.') !== false) $ext = substr($file_name, $pos, strlen($file_name));
-							if ($this->upload_file_without_extension) $file_name = $this->upload_file_name[$i];
-							else $file_name = $this->upload_file_name[$i] . $ext;
+							if ($pos = strrpos($file_name, '.') !== false) 
+								$ext = substr($file_name, $pos, strlen($file_name));
+							if ($this->upload_file_without_extension) 
+								$file_name = $this->upload_file_name[$i];
+							else 
+								$file_name = $this->upload_file_name[$i] . $ext;
 						}
-						if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) $file_name = stringTools::get_unique_id() . '_' . $file_name;
+						if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) 
+							$file_name = stringTools::get_unique_id() . '_' . $file_name;
 						move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'], $this->upload_directory[$i] . '/' . $file_name);
-						if ($this->upload_save_in_db == "original") $this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
-						else $this->field_value_array[$i] = $file_name;
-						if (!$first) $query .= ',';
+						if ($this->upload_save_in_db == "original") 
+							$this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
+						else 
+							$this->field_value_array[$i] = $file_name;
+						if (!$first) 
+							$query .= ',';
 						$first = false;
 						$query .= $this->field_name_array[$i] . "=";
-						if ($this->field_unicode_array[$i]) $query .= "N";
+						if ($this->field_unicode_array[$i]) 
+							$query .= "N";
 						$query .= "'" . $this->field_value_array[$i] . "'";
 					}
 				}
@@ -700,13 +759,17 @@ class dbform {
 			}
 			else {
 				if ($this->field_name_array[$i] != '' && ($this->field_value_array[$i] != '' || $this->show_type_array[$i] != "P")) {
-					if (!$first) $query .= ',';
+					if (!$first) 
+						$query .= ',';
 					$first = false;
-					if ($this->use_md5_array[$i]) $this->field_value_array[$i] = md5($this->field_value_array[$i]);
+					if ($this->use_md5_array[$i]) 
+						$this->field_value_array[$i] = md5($this->field_value_array[$i]);
 					$query .= $this->field_name_array[$i] . "=";
-					if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) $query .= "'";
+					if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) 
+						$query .= "'";
 					$query .= $this->field_value_array[$i];
-					if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) $query .= "'";
+					if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) 
+						$query .= "'";
 				}
 			}
 			//          if ($i!=$this->field_count-1 && !$empty)
@@ -767,8 +830,10 @@ class dbform {
 		}
 		if ($this->_error_message != '') {
 			echo '<p';
-			if ($this->error_style) echo ' style="' . $this->error_style . '"';
-			if ($this->error_class) echo ' class="' . $this->error_class . '"';
+			if ($this->error_style) 
+				echo ' style="' . $this->error_style . '"';
+			if ($this->error_class) 
+				echo ' class="' . $this->error_class . '"';
 			echo '>';
 			echo $this->_error_message;
 			echo '</p>';
@@ -779,13 +844,20 @@ class dbform {
 	private function _show_table($start = 1) {
 		if ($start != 0) {
 			echo '<table';
-			if ($this->tb_class) echo ' class="' . $this->tb_class . '"';
-			if ($this->tb_style) echo ' style="' . $this->tb_style . '"';
-			if ($this->tb_width) echo ' width="' . $this->tb_width . '"';
-			if ($this->cellpadding) echo ' cellpadding="' . $this->cellpadding . '"';
-			if ($this->cellspacing) echo ' cellspacing="' . $this->cellspacing . '"';
-			if ($this->border) echo ' border="' . $this->border . '"';
-			if ($this->border_color) echo ' bordercolor="' . $this->border_color . '"';
+			if ($this->tb_class) 
+				echo ' class="' . $this->tb_class . '"';
+			if ($this->tb_style) 
+				echo ' style="' . $this->tb_style . '"';
+			if ($this->tb_width) 
+				echo ' width="' . $this->tb_width . '"';
+			if ($this->cellpadding) 
+				echo ' cellpadding="' . $this->cellpadding . '"';
+			if ($this->cellspacing) 
+				echo ' cellspacing="' . $this->cellspacing . '"';
+			if ($this->border) 
+				echo ' border="' . $this->border . '"';
+			if ($this->border_color) 
+				echo ' bordercolor="' . $this->border_color . '"';
 			echo '>';
 		}
 		else echo '</table>';
@@ -796,20 +868,33 @@ class dbform {
 	private function _show_td($row, $col, $start = 1, $col_span = 1) {
 		if ($start != 0) {
 			$bg_color = '';
-			if ($col == 1 && $col_span == 1) $bg_color = $this->td1_bgcolor_array[$row];
-			if ($col == 2 && $col_span == 1) $bg_color = $this->td2_bgcolor_array[$row];
+			if ($col == 1 && $col_span == 1) 
+				$bg_color = $this->td1_bgcolor_array[$row];
+			if ($col == 2 && $col_span == 1) 
+				$bg_color = $this->td2_bgcolor_array[$row];
 			echo '<td';
-			if ($bg_color != '') echo ' bgcolor="' . $bg_color . '"';
-			if ($col == 1 && $this->td_width_1) echo ' width="' . $this->td_width_1 . '"';
-			if ($col == 2 && $this->td_width_2) echo ' width="' . $this->td_width_2 . '"';
-			if ($col == 1 && $this->td_align_1) echo ' align="' . $this->td_align_1 . '"';
-			if ($col == 2 && $this->td_align_2) echo ' align="' . $this->td_align_2 . '"';
-			if ($col == 1 && ($this->show_type_array[$row] == "A" || $this->show_type_array[$row] == "a")) echo ' valign="top"';
-			if ($col == 3) echo ' align="center" colspan="2"';
-			if ($this->td_style) echo ' style="' . $this->td_style . '"';
-			if ($col == 1 && $this->td_style_1) echo ' style="' . $this->td_style_1 . '"';
-			if ($col == 2 && $this->td_style_2) echo ' style="' . $this->td_style_2 . '"';
-			if ($this->td_class) echo ' class="' . $this->td_class . '"';
+			if ($bg_color != '') 
+				echo ' bgcolor="' . $bg_color . '"';
+			if ($col == 1 && $this->td_width_1) 
+				echo ' width="' . $this->td_width_1 . '"';
+			if ($col == 2 && $this->td_width_2) 
+				echo ' width="' . $this->td_width_2 . '"';
+			if ($col == 1 && $this->td_align_1) 
+				echo ' align="' . $this->td_align_1 . '"';
+			if ($col == 2 && $this->td_align_2) 
+				echo ' align="' . $this->td_align_2 . '"';
+			if ($col == 1 && ($this->show_type_array[$row] == "A" || $this->show_type_array[$row] == "a")) 
+				echo ' valign="top"';
+			if ($col == 3) 
+				echo ' align="center" colspan="2"';
+			if ($this->td_style) 
+				echo ' style="' . $this->td_style . '"';
+			if ($col == 1 && $this->td_style_1) 
+				echo ' style="' . $this->td_style_1 . '"';
+			if ($col == 2 && $this->td_style_2) 
+				echo ' style="' . $this->td_style_2 . '"';
+			if ($this->td_class) 
+				echo ' class="' . $this->td_class . '"';
 			echo '>';
 		}
 		else {
@@ -822,9 +907,12 @@ class dbform {
 	private function _show_tr($bg_color, $start = 1) {
 		if ($start != 0) {
 			echo '<tr';
-			if ($bg_color) echo ' bgcolor="' . $bg_color . '"';
-			if ($this->tr_style) echo ' style="' . $this->tr_style . '"';
-			if ($this->tr_class) echo ' class="' . $this->tr_class . '"';
+			if ($bg_color) 
+				echo ' bgcolor="' . $bg_color . '"';
+			if ($this->tr_style) 
+				echo ' style="' . $this->tr_style . '"';
+			if ($this->tr_class) 
+				echo ' class="' . $this->tr_class . '"';
 			echo '>';
 		}
 		else echo '</tr>';
@@ -841,28 +929,37 @@ class dbform {
 			else {
 				$this->_show_tr($this->tr_bgcolor_array[$i]);
 				$this->_show_td($i, 1);
-				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before title') echo $this->star_source;
+				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before title') 
+					echo $this->star_source;
 				$this->_show_description($i);
-				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after title') echo $this->star_source;
+				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after title') 
+					echo $this->star_source;
 				$this->_show_td($i, 1, 0);
 				$this->_show_td($i, 2);
-				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before field') echo $this->star_source;
+				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before field') 
+					echo $this->star_source;
 				$this->_show_input($i);
-				if ($this->text_after_field[$i] != '') echo ' ' . $this->text_after_field[$i];
-				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after field') echo $this->star_source;
+				if ($this->text_after_field[$i] != '') 
+					echo ' ' . $this->text_after_field[$i];
+				if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after field') 
+					echo $this->star_source;
 				$this->_show_td($i, 2, 0);
 				$this->_show_tr('', 0);
 				if ($this->repeat_password_array[$i]) {
 					$this->_show_tr($this->tr_bgcolor_array[$i]);
 					$this->_show_td($i, 1);
-					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before title') echo $this->star_source;
+					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before title') 
+						echo $this->star_source;
 					$this->_show_description($i, 1);
-					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after title') echo $this->star_source;
+					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after title') 
+						echo $this->star_source;
 					$this->_show_td($i, 1, 0);
 					$this->_show_td($i, 2);
-					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before field') echo $this->star_source;
+					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'before field') 
+						echo $this->star_source;
 					$this->_show_input($i, 1);
-					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after field') echo $this->star_source;
+					if ($this->show_star && !$this->field_nul_array[$i] && $this->star_pos == 'after field') 
+						echo $this->star_source;
 					$this->_show_td($i, 2, 0);
 					$this->_show_tr('', 0);
 				}
@@ -893,12 +990,16 @@ class dbform {
 	//internal use
 	private function _show_description($row, $repeat = 0) {
 		if ($repeat) {
-			if ($this->redescription_array[$row] != '') echo $this->redescription_array[$row] . ':';
-			else echo "&nbsp;";
+			if ($this->redescription_array[$row] != '') 
+				echo $this->redescription_array[$row] . ':';
+			else 
+				echo "&nbsp;";
 		}
 		else {
-			if ($this->description_array[$row] != '') echo $this->description_array[$row] . ':';
-			else echo "&nbsp;";
+			if ($this->description_array[$row] != '') 
+				echo $this->description_array[$row] . ':';
+			else 
+				echo "&nbsp;";
 		}
 	}
 
@@ -968,13 +1069,20 @@ class dbform {
 		echo ' id="';
 		echo $this->field_name_array[$row];
 		echo '"';
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '"';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '"';
-		if ($this->field_ltr[$row]) echo ' dir="ltr" ';
-		if ($this->field_length_array[$row]) echo ' size="' . $this->field_length_array[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '"';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '"';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '"';
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '"';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '"';
+		if ($this->field_ltr[$row]) 
+			echo ' dir="ltr" ';
+		if ($this->field_length_array[$row]) 
+			echo ' size="' . $this->field_length_array[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '"';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '"';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '"';
 		echo '>';
 	}
 
@@ -1003,17 +1111,28 @@ class dbform {
 		echo '" value="';
 		if ($this->field_type_array[$row] != "I" || $this->field_value_array[$row] != "NULL") echo $this->field_value_array[$row];
 		echo '" ';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_readonly_array[$row]) echo " readonly ";
-		if ($this->field_show_class) echo 'class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo 'style="' . $this->field_show_style[$row] . '" ';
-		if ($this->field_length_array[$row]) echo 'size="' . $this->field_length_array[$row] . '" ';
-		if ($this->field_max_length_array[$row]) echo 'maxlength="' . $this->field_max_length_array[$row] . '" ';
-		if ($this->field_ltr[$row]) echo 'dir="ltr" ';
-		if ($this->farsi_type_array[$row]) echo 'onkeypress="FKeyPress()" onkeydown="FKeyDown()" ';
-		if ($this->on_change_array[$row] != '') echo 'onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo 'onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo 'oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_readonly_array[$row]) 
+			echo " readonly ";
+		if ($this->field_show_class) 
+			echo 'class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo 'style="' . $this->field_show_style[$row] . '" ';
+		if ($this->field_length_array[$row]) 
+			echo 'size="' . $this->field_length_array[$row] . '" ';
+		if ($this->field_max_length_array[$row]) 
+			echo 'maxlength="' . $this->field_max_length_array[$row] . '" ';
+		if ($this->field_ltr[$row]) 
+			echo 'dir="ltr" ';
+		if ($this->farsi_type_array[$row]) 
+			echo 'onkeypress="FKeyPress()" onkeydown="FKeyDown()" ';
+		if ($this->on_change_array[$row] != '') 
+			echo 'onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo 'onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo 'oninput="' . $this->on_input_array[$row] . '" ';
 		echo '>';
 	}
 
@@ -1024,7 +1143,8 @@ class dbform {
 			$n = '';
 		}
 		else if ($this->field_value_array[$row] == 'Error') {
-			if ($_POST[$this->field_name_array[$row] . "_d"] != '') $this->field_time_date_part[$row] = $_POST[$this->field_name_array[$row] . "_d"];
+			if ($_POST[$this->field_name_array[$row] . "_d"] != '') 
+				$this->field_time_date_part[$row] = $_POST[$this->field_name_array[$row] . "_d"];
 			$h = $this->field_name_array[$row] . "_h";
 			$n = $this->field_name_array[$row] . "_n";
 			$h = $_POST[$h];
@@ -1034,31 +1154,44 @@ class dbform {
 			$time = strtotime($this->field_value_array[$row]);
 			$h = date('H', $time);
 			$n = date('i', $time);
-			if ($this->state == "select") $this->field_time_date_part[$row] = date('m-d-Y', $time);
-			else if ($_POST[$this->field_name_array[$row] . "_d"] != '') $this->field_time_date_part[$row] = $_POST[$this->field_name_array[$row] . "_d"];
+			if ($this->state == "select") 
+				$this->field_time_date_part[$row] = date('m-d-Y', $time);
+			else if ($_POST[$this->field_name_array[$row] . "_d"] != '') 
+				$this->field_time_date_part[$row] = $_POST[$this->field_name_array[$row] . "_d"];
 		}
-		if ($show_date_part) echo '<input type="hidden" name="' . $this->field_name_array[$row] . '_d" value="' . $this->field_time_date_part[$row] . '">';
+		if ($show_date_part) 
+			echo '<input type="hidden" name="' . $this->field_name_array[$row] . '_d" value="' . $this->field_time_date_part[$row] . '">';
 		echo '<span dir="ltr">';
 		echo '<select size="1" name="';
 		echo $this->field_name_array[$row];
 		echo '_h" id="';
 		echo $this->field_name_array[$row];
 		echo '_h"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo 'style="margin-left: 1">';
-		if ($this->field_time_start_hour[$row] == "") $this->field_time_start_hour[$row] = 0;
-		if ((int)($this->field_time_start_hour[$row]) > 23) $this->field_time_start_hour[$row] = 23;
-		if ($this->field_time_end_hour[$row] == "") $this->field_time_end_hour[$row] = 23;
-		if ((int)($this->field_time_end_hour[$row]) < 0) $this->field_time_end_hour[$row] = 0;
+		if ($this->field_time_start_hour[$row] == "") 
+			$this->field_time_start_hour[$row] = 0;
+		if ((int)($this->field_time_start_hour[$row]) > 23) 
+			$this->field_time_start_hour[$row] = 23;
+		if ($this->field_time_end_hour[$row] == "") 
+			$this->field_time_end_hour[$row] = 23;
+		if ((int)($this->field_time_end_hour[$row]) < 0) 
+			$this->field_time_end_hour[$row] = 0;
 ?>
 <option value=""></option>
 <?
-		for ($i = $this->field_time_start_hour[$row];$i <= $this->field_time_end_hour[$row];$i++) {
+		for ($i = $this->field_time_start_hour[$row]; $i <= $this->field_time_end_hour[$row];$i++) {
 			$ii = ($i < 10 ? '0' . $i : $i);
 ?>
 <option value="<?=$ii
@@ -1072,14 +1205,21 @@ class dbform {
 		echo '_n" id="';
 		echo $this->field_name_array[$row];
 		echo '_n"';
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo 'style="margin-left: 1">';
-		if ($n % $this->field_time_minute_step[$row] != 0) $n = round($n / $this->field_time_minute_step[$row]) * $this->field_time_minute_step[$row];
-		if ($this->field_time_minute_step[$row] == '') $this->field_time_minute_step[$row] = 1;
+		if ($n % $this->field_time_minute_step[$row] != 0) 
+			$n = round($n / $this->field_time_minute_step[$row]) * $this->field_time_minute_step[$row];
+		if ($this->field_time_minute_step[$row] == '') 
+			$this->field_time_minute_step[$row] = 1;
 ?>
 <option value=""></option>
 <?
@@ -1141,7 +1281,8 @@ class dbform {
 			// changed for an unwanted error!!!:
 			//        $time_set=str2time($this->field_value_array[$row]);
 			$time_set = strtotime($this->field_value_array[$row]);
-			if ($time_set == "") $time_set = time();
+			if ($time_set == "") 
+				$time_set = time();
 			$y = date("Y", $time_set);
 			$m = date("m", $time_set);
 			$d = date("d", $time_set);
@@ -1158,12 +1299,18 @@ class dbform {
 		echo '_d" id="';
 		echo $this->field_name_array[$row];
 		echo '_d"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo 'style="margin-left: 1">' . "\n\r";
 ?>
 <option></option>
@@ -1205,12 +1352,18 @@ class dbform {
 		echo '_m" id="';
 		echo $this->field_name_array[$row];
 		echo '_m"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo 'style="margin-left: 1; margin-right:1">' . "\n\r";
 ?>
 <option></option>
@@ -1233,21 +1386,30 @@ class dbform {
 		echo '_y" id="';
 		echo $this->field_name_array[$row];
 		echo '_y"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo ">\n\r";
 ?>
 <option></option>
 <?
 		$_start = $y_now + $start_year;
 		$_end = $y_now + $end_year;
-		if ($y < $_start && $y != 0) $_start = $y;
-		if ($y > $_end) $_end = $y;
-		for ($i = $_start;$i <= $_end;$i++) echo '<option' . ($i == $y ? " selected" : "") . '>' . $i . "</option>\n\r";
+		if ($y < $_start && $y != 0) 
+			$_start = $y;
+		if ($y > $_end) 
+			$_end = $y;
+		for ($i = $_start; $i <= $_end; $i++) 
+			echo '<option' . ($i == $y ? " selected" : "") . '>' . $i . "</option>\n\r";
 ?>
 </select>
 <?
@@ -1300,12 +1462,18 @@ class dbform {
 		echo '_d" id="';
 		echo $this->field_name_array[$row];
 		echo '_d"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo 'style="margin-left: 1">' . "\n\r";
 ?>
 <option></option>
@@ -1347,12 +1515,18 @@ class dbform {
 		echo '_m" id="';
 		echo $this->field_name_array[$row];
 		echo '_m"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo 'style="margin-left: 1; margin-right:1">' . "\n\r";
 ?>
 <option></option>
@@ -1375,21 +1549,30 @@ class dbform {
 		echo '_y" id="';
 		echo $this->field_name_array[$row];
 		echo '_y"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo '>' . "\n\r";
 ?>
 <option></option>
 <?
 		$_start = $y_now + $start_year;
 		$_end = $y_now + $end_year;
-		if ($y < $_start && $y != 0) $_start = $y;
-		if ($y > $_end) $_end = $y;
-		for ($i = $_start;$i <= $_end;$i++) echo '<option' . ($i == $y ? " selected" : "") . '>' . $i . "</option>\n\r";
+		if ($y < $_start && $y != 0) 
+			$_start = $y;
+		if ($y > $_end) 
+			$_end = $y;
+		for ($i = $_start;$i <= $_end;$i++) 
+			echo '<option' . ($i == $y ? " selected" : "") . '>' . $i . "</option>\n\r";
 ?>
 </select>
 <?
@@ -1398,22 +1581,35 @@ class dbform {
 	//internal use
 	private function _show_password_input($row, $repeat) {
 		echo '<input type="password" name="';
-		if ($repeat) echo $this->refield_name_array[$row];
-		else echo $this->field_name_array[$row];
+		if ($repeat) 
+			echo $this->refield_name_array[$row];
+		else 
+			echo $this->field_name_array[$row];
 		echo '" ';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
 		echo 'id="';
-		if ($repeat) echo $this->refield_name_array[$row];
-		else echo $this->field_name_array[$row];
+		if ($repeat) 
+			echo $this->refield_name_array[$row];
+		else 
+			echo $this->field_name_array[$row];
 		echo '" ';
-		if ($this->field_show_class) echo 'class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo 'style="' . $this->field_show_style[$row] . '" ';
-		if ($this->field_length_array[$row]) echo 'size="' . $this->field_length_array[$row] . '" ';
-		if ($this->field_max_length_array[$row]) echo 'maxlength="' . $this->field_max_length_array[$row] . '" ';
-		if ($this->field_ltr[$row]) echo 'dir="ltr" ';
-		if ($this->on_change_array[$row] != '') echo 'onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo 'onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_show_class) 
+			echo 'class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo 'style="' . $this->field_show_style[$row] . '" ';
+		if ($this->field_length_array[$row]) 
+			echo 'size="' . $this->field_length_array[$row] . '" ';
+		if ($this->field_max_length_array[$row]) 
+			echo 'maxlength="' . $this->field_max_length_array[$row] . '" ';
+		if ($this->field_ltr[$row]) 
+			echo 'dir="ltr" ';
+		if ($this->on_change_array[$row] != '') 
+			echo 'onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo 'onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo '>';
 	}
 
@@ -1423,13 +1619,20 @@ class dbform {
 		echo ' id="';
 		echo $this->field_name_array[$row];
 		echo '"';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_show_class) echo ' class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo ' style="' . $this->field_show_style[$row] . '" ';
-		if ($this->field_ltr[$row]) echo ' dir="ltr" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_show_class) 
+			echo ' class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo ' style="' . $this->field_show_style[$row] . '" ';
+		if ($this->field_ltr[$row]) 
+			echo ' dir="ltr" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
 		echo '>';
 		echo "\n";
 		reset($this->field_option_array[$row]);
@@ -1437,7 +1640,8 @@ class dbform {
 			echo '<option value="';
 			echo $key;
 			echo '"';
-			if ($this->field_value_array[$row] == $key) echo " selected";
+			if ($this->field_value_array[$row] == $key) 
+				echo " selected";
 			echo '>';
 			echo $val;
 			echo '</option>';
@@ -1456,12 +1660,18 @@ class dbform {
 			echo '" value="';
 			echo $key;
 			echo '" ';
-			if ($this->field_value_array[$row] == $key) echo " checked ";
-			if ($this->field_disabled_array[$row]) echo " disabled ";
-			if ($this->field_ltr[$row]) echo 'dir="ltr" ';
-			if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-			if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-			if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
+			if ($this->field_value_array[$row] == $key) 
+				echo " checked ";
+			if ($this->field_disabled_array[$row]) 
+				echo " disabled ";
+			if ($this->field_ltr[$row]) 
+				echo 'dir="ltr" ';
+			if ($this->on_change_array[$row] != '') 
+				echo ' onchange="' . $this->on_change_array[$row] . '" ';
+			if ($this->on_blur_array[$row] != '') 
+				echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+			if ($this->on_input_array[$row] != '') 
+				echo ' oninput="' . $this->on_input_array[$row] . '" ';
 			echo 'id="';
 			echo $this->field_name_array[$row] . '_' . $key;
 			echo '"';
@@ -1477,20 +1687,28 @@ class dbform {
 
 	//internal use
 	private function _show_check_input($row) {
-		if ($this->check_value_array[$row] == '') $this->check_value_array[$row] = 1;
+		if ($this->check_value_array[$row] == '') 
+			$this->check_value_array[$row] = 1;
 		echo '<input type="checkbox" name="';
 		echo $this->field_name_array[$row];
 		echo '" value="' . $this->check_value_array[$row] . '" ';
 		echo ' id="';
 		echo $this->field_name_array[$row];
 		echo '" ';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_value_array[$row] && $this->field_value_array[$row] != 'NULL') echo 'checked';
-		if ($this->field_ltr[$row]) echo 'dir="ltr" ';
-		if ($this->on_change_array[$row] != '') echo ' onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo ' onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
-		if ($this->field_class_array[$row]) echo ' class="' . $this->field_class_array[$row] . '" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_value_array[$row] && $this->field_value_array[$row] != 'NULL') 
+			echo 'checked';
+		if ($this->field_ltr[$row]) 
+			echo 'dir="ltr" ';
+		if ($this->on_change_array[$row] != '') 
+			echo ' onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo ' onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->field_class_array[$row]) 
+			echo ' class="' . $this->field_class_array[$row] . '" ';
 		echo '>';
 		if ($this->field_option_array[$row] != '') {
 			echo '<label for="';
@@ -1508,17 +1726,28 @@ class dbform {
 		echo '" id="';
 		echo $this->field_name_array[$row];
 		echo '" ';
-		if ($this->field_disabled_array[$row]) echo " disabled ";
-		if ($this->field_readonly_array[$row]) echo " readonly ";
-		if ($this->field_show_class) echo 'class="' . $this->field_show_class . '" ';
-		if ($this->field_show_style[$row]) echo 'style="' . $this->field_show_style[$row] . '" ';
-		if ($this->field_length_array[$row]) echo 'cols="' . $this->field_length_array[$row] . '" ';
-		if ($this->field_height_array[$row]) echo 'rows="' . $this->field_height_array[$row] . '" ';
-		if ($this->field_ltr[$row]) echo 'dir="ltr" ';
-		if ($this->on_change_array[$row] != '') echo 'onchange="' . $this->on_change_array[$row] . '" ';
-		if ($this->on_blur_array[$row] != '') echo 'onblur="' . $this->on_blur_array[$row] . '" ';
-		if ($this->on_input_array[$row] != '') echo ' oninput="' . $this->on_input_array[$row] . '" ';
-		if ($this->farsi_type_array[$row]) echo 'onkeypress="FKeyPress()" onkeydown="FKeyDown()" ';
+		if ($this->field_disabled_array[$row]) 
+			echo " disabled ";
+		if ($this->field_readonly_array[$row]) 
+			echo " readonly ";
+		if ($this->field_show_class) 
+			echo 'class="' . $this->field_show_class . '" ';
+		if ($this->field_show_style[$row]) 
+			echo 'style="' . $this->field_show_style[$row] . '" ';
+		if ($this->field_length_array[$row]) 
+			echo 'cols="' . $this->field_length_array[$row] . '" ';
+		if ($this->field_height_array[$row]) 
+			echo 'rows="' . $this->field_height_array[$row] . '" ';
+		if ($this->field_ltr[$row]) 
+			echo 'dir="ltr" ';
+		if ($this->on_change_array[$row] != '') 
+			echo 'onchange="' . $this->on_change_array[$row] . '" ';
+		if ($this->on_blur_array[$row] != '') 
+			echo 'onblur="' . $this->on_blur_array[$row] . '" ';
+		if ($this->on_input_array[$row] != '') 
+			echo ' oninput="' . $this->on_input_array[$row] . '" ';
+		if ($this->farsi_type_array[$row]) 
+			echo 'onkeypress="FKeyPress()" onkeydown="FKeyDown()" ';
 		echo '>';
 		echo $this->field_value_array[$row];
 		echo '</textarea>';
