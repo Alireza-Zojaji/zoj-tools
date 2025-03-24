@@ -77,7 +77,7 @@ class dbForm {
 	public $debug;
 	public $_error_message;
 	public $_redirected;
-	public $_publics_set;
+	public $_vars_set;
 	public $after_buttons_html;
 	public $border;
 	public $border_color;
@@ -89,7 +89,7 @@ class dbForm {
 	public $cellpadding;
 	public $cellspacing;
 	public $code_field;
-	public $code_public;
+	public $code_var;
 	public $comment_array;
 	public $custom_error_message_array;
 	public $custom_error_number;
@@ -311,17 +311,19 @@ class dbForm {
 	public function get_state() {
 		global $_POST, $_GET;
 		for ($i = 0;$i < $this->field_count;$i++) {
-			if ($_POST["submit"] != "") $this->field_value_array[$i] = $_POST[$this->field_name_array[$i]];
-			if (!$this->field_value_array[$i] && ($this->field_type_array[$i] == "I" || $this->field_type_array[$i] == "i")) $this->field_value_array[$i] = 0;
+			if ($_POST["submit"] != "") 
+				$this->field_value_array[$i] = $_POST[$this->field_name_array[$i]];
+			if (! $this->field_value_array[$i] && ($this->field_type_array[$i] == "I" || $this->field_type_array[$i] == "i")) 
+				$this->field_value_array[$i] = 0;
 		}
 
-		$this->_publics_set = 1;
+		$this->_vars_set = 1;
 		if ($_POST["cancel"] != "") {
 			$this->state = "cancel";
 		}
 		else if ($_POST["submit"] != "") {
-			$code_public = $this->code_public;
-			if ($_GET[$code_public] == "") //insert
+			$code_var = $this->code_var;
+			if ($_GET[$code_var] == "") //insert
 			{
 				$this->state = "insert";
 			}
@@ -348,7 +350,7 @@ class dbForm {
 		if ($this->auto_field_count) 
 			$this->field_count = count($this->field_name_array);
 		global $_POST, $_GET;
-		if (!$this->_publics_set && $_POST["submit"] != "") {
+		if (!$this->_vars_set && $_POST["submit"] != "") {
 			if (isset($this->on_submit)) {
 				call_user_func($this->on_submit);
 			}
@@ -462,11 +464,9 @@ class dbForm {
 		}
 		else if ($_POST["_submitted_"] != "") {
 			$this->error_type = '';
-			if (($error = $this->check_rules()) == - 1) //no error
-			{
-				$code_public = $this->code_public;
-				if ($_GET[$code_public] == "") //insert
-				{
+			if (($error = $this->check_rules()) == - 1) { //no error
+				$code_var = $this->code_var;
+				if ($_GET[$code_var] == "") { //insert
 					if (isset($this->on_before_insert)) {
 						$this->before_insert_result = call_user_func($this->on_before_insert);
 						if ($this->before_insert_result) {
@@ -546,7 +546,7 @@ class dbForm {
 		}
 		else //select
 		{
-			if ($_GET[$this->code_public] != "" && !$this->not_initialize_fields) //not select for inserting
+			if ($_GET[$this->code_var] != "" && !$this->not_initialize_fields) //not select for inserting
 				$this->select();
 			$this->state = "select";
 		}
@@ -591,7 +591,7 @@ class dbForm {
 		global $_POST, $_GET;
 		$table_name = $this->table_name;
 		$code_field = $this->code_field;
-		$value = $_GET[$this->code_public];
+		$value = $_GET[$this->code_var];
 		$query = "
         SELECT * FROM $table_name WHERE $code_field='$value'
         ";
@@ -690,7 +690,7 @@ class dbForm {
 		global $_POST, $_GET, $_FILES;
 		$table_name = $this->table_name;
 		$code_field = $this->code_field;
-		$value = $_GET[$this->code_public];
+		$value = $_GET[$this->code_var];
 		$query = "UPDATE $table_name SET ";
 		$first = true;
 		for ($i = 0;$i < $this->field_count;$i++) if (!$this->not_in_table[$i] && !$this->field_disabled_array[$i]) {
@@ -709,7 +709,7 @@ class dbForm {
 					}
 					else {
 						$code_field = $this->code_field;
-						$value = $_GET[$this->code_public];
+						$value = $_GET[$this->code_var];
 						$__query = "SELECT " . $this->field_name_array[$i] . " FROM " . $this->table_name . " WHERE $code_field='$value'";
 						$__table = $this->query($__query);
 						$__row = mysqli_fetch_array($__table);
@@ -765,7 +765,7 @@ class dbForm {
 			
 		}
 		$code_field = $this->code_field;
-		$value = $_GET[$this->code_public];
+		$value = $_GET[$this->code_var];
 		$query .= " WHERE $code_field='$value'";
 		return ($this->query($query));
 	}
@@ -775,7 +775,7 @@ class dbForm {
 		global $_POST, $_GET;
 		$table_name = $this->table_name;
 		$code_field = $this->code_field;
-		$value = $_GET[$this->code_public];
+		$value = $_GET[$this->code_var];
 		$query = "DELETE FROM $table_name WHERE $code_field='$value'";
 		return ($this->query($query));
 	}
@@ -1744,18 +1744,21 @@ class dbForm {
 	//internal use
 	private function check_rules() {
 		$error = - 1;
-		for ($i = 0;$i < $this->field_count;$i++) {
+		for ($i = 0; $i < $this->field_count; $i++) {
 			if (!($this->field_nul_array[$i]) && $this->show_type_array[$i] == "P" && $this->state == "insert" && $this->field_value_array[$i] == "") {
 				$error = $i;
 				$this->error_type = 'Empty';
 				break;
 			}
-			else if (!($this->field_nul_array[$i]) && ($this->show_type_array[$i] == "R" || $this->show_type_array[$i] == "S" || $this->show_type_array[$i] == "D" || $this->show_type_array[$i] == "M" || $this->show_type_array[$i] == "DM" || $this->show_type_array[$i] == "T") && (($this->field_type_array[$i] == "I" && $this->field_value_array[$i] == "NULL") || $this->field_value_array[$i] == '')) {
+			else if (!($this->field_nul_array[$i]) && 
+			    ($this->show_type_array[$i] == "R" || $this->show_type_array[$i] == "S" || $this->show_type_array[$i] == "D" || $this->show_type_array[$i] == "M" || $this->show_type_array[$i] == "DM" || $this->show_type_array[$i] == "T") && 
+			    (($this->field_type_array[$i] == "I" && $this->field_value_array[$i] == "NULL") || $this->field_value_array[$i] == '')
+			) {
 				$error = $i;
 				$this->error_type = 'Empty';
 				break;
 			}
-			else if (!($this->field_nul_array[$i]) && $this->show_type_array[$i] == "F" && $_GET[$this->code_public] == "" && ($_FILES[$this->field_name_array[$i]]['error'] != 0 || $_FILES[$this->field_name_array[$i]]['size'] == 0)) {
+			else if (!($this->field_nul_array[$i]) && $this->show_type_array[$i] == "F" && $_GET[$this->code_var] == "" && ($_FILES[$this->field_name_array[$i]]['error'] != 0 || $_FILES[$this->field_name_array[$i]]['size'] == 0)) {
 				$error = $i;
 				$this->error_type = 'Empty';
 				break;
@@ -1795,7 +1798,7 @@ class dbForm {
 
 	private function _show_buttons() {
 		global $_POST, $_GET;
-		$value = $_GET[$this->code_public];
+		$value = $_GET[$this->code_var];
 		if (!$this->dont_show_buttons) {
 			if (!$this->image_buttons) {
 				if ($this->show_submit) {
