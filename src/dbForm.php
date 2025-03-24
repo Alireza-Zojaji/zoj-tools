@@ -62,6 +62,9 @@
 // 14 Mar 2025: Fixed identity_insert for MySqli.
 // 16 Mar 2025: Migrated from PHP 5.x to PHP 8.2 .
 // 22 Mar 2025: Changed to composer compatible.
+// 23 Mar 2025: Added addField function to add new field easily.
+// 24 Mar 2025: Used call_user_func function for calling events instead of fnc function variable.
+
 namespace ZojTools;
 
 use ZojTools\dateTimeTools\dateTimeFormat;
@@ -213,8 +216,13 @@ class dbForm {
     public $field_class_array;
 
 	//consructor
-	public function __construct($db_link, $table_name) {
-		global $_POST;
+	public function __construct(
+		$db_link, 
+		$table_name,
+		$show_star = false, 
+		$star_pos = "after field"
+	) {
+		//global $_POST;
 		$this->tb_width = "100%";
 		$this->db_link = $db_link;
 		$this->table_name = $table_name;
@@ -223,8 +231,11 @@ class dbForm {
 		$this->star_pos = 'before title';
 		$this->correct_table_name();
 		$this->correct_quote_char();
-		//      $this->update_href=
-		
+		$this->show_star = $show_star;
+		$this->star_pos = $star_pos;
+		$this->redirect = true;
+		$this->general_error_message = "خطا";
+		$this->debug = false;
 	}
 
 	public function addField(
@@ -234,24 +245,17 @@ class dbForm {
 		$description, 
 		$field_length = 10,
 		$null = true, 
-		$ltr = false, 
-		$show_star = false, 
-		$star_pos = "after field",
-		
-		) {
-			$this->field_name_array[$this->field_count] = $field_name;
-			$this->field_type_array[$this->field_count] = $field_type;
-			$this->show_type_array[$this->field_count] = $show_type;
-			$this->description_array[$this->field_count] = $description;
-			$this->field_length_array[$this->field_count] = $field_length;
-			$this->field_nul_array[$this->field_count] = $null;
-			$this->field_ltr[$this->field_count] = $ltr;
-			$this->
-
-		$fr->field_ltr[$i]=true;
-		$fr->show_star=true;
-		$fr->star_pos="after field";
-		$fr->comment_array[$i]='<p class="fcomment"">شما با این شماره موبایل در سیستم شناسایی می‌شوید.</p>';
+		$ltr = false
+	) {
+		$this->field_name_array[$this->field_count] = $field_name;
+		$this->field_type_array[$this->field_count] = $field_type;
+		$this->show_type_array[$this->field_count] = $show_type;
+		$this->description_array[$this->field_count] = $description;
+		$this->field_length_array[$this->field_count] = $field_length;
+		$this->field_nul_array[$this->field_count] = $null;
+		$this->field_ltr[$this->field_count] = $ltr;
+		$this->field_count ++;
+		return ($this->field_count - 1);
 		
 	}
 
@@ -288,7 +292,7 @@ class dbForm {
 		}
 		else {
 			$error_rep = error_reporting(E_ALL);
-			$old_handler = set_error_handler("error_occured", E_WARNING);
+			$old_handler = set_error_handler(['self', 'error_occured'], E_WARNING);
 			$this->query = $query;
 			try {
 				$result = mysqli_query($this->db_link, $query);
@@ -297,8 +301,8 @@ class dbForm {
 				$result = false;
 			}
 			error_reporting($error_rep);
-			restore_error_handler();
-			//        set_error_handler($old_handler,E_WARNING);
+			//restore_error_handler();
+	        set_error_handler($old_handler, E_WARNING);
 			return ($result);
 		}
 	}
@@ -346,8 +350,7 @@ class dbForm {
 		global $_POST, $_GET;
 		if (!$this->_publics_set && $_POST["submit"] != "") {
 			if (isset($this->on_submit)) {
-				$fnc = $this->on_submit;
-				$fnc();
+				call_user_func($this->on_submit);
 			}
 			for ($i = 0;$i < $this->field_count;$i++) {
 				$this->field_value_array[$i] = $_POST[$this->field_name_array[$i]];
@@ -430,8 +433,7 @@ class dbForm {
 		//      else if (count($_POST)>0 && $_POST["delete"]=="" && $_POST["delete_x"]=="" && $_POST["cancel"]=="" && $_POST["cancel_x"]=="" && $_POST["reset"]=="" && $_POST["reset_x"]=="")
 		else if ($_POST["delete"] != "") {//delete
 			if (isset($this->on_before_delete)) {
-				$fnc = $this->on_before_delete;
-				$this->before_delete_result = $fnc();
+				$this->before_delete_result = call_user_func($this->on_before_delete);
 				if ($this->before_delete_result) {
 					$this->_error_message = $this->before_delete_result;
 					$error_occured = true;
@@ -439,24 +441,20 @@ class dbForm {
 			}
 			if (!$error_occured && $this->delete()) {
 				if (isset($this->on_success_delete)) {
-					$fnc = $this->on_success_delete;
-					$fnc();
+					call_user_func($this->on_success_delete);
 				}
 				if (isset($this->on_after_delete)) {
-					$fnc = $this->on_after_delete;
-					$fnc();
+					call_user_func($this->on_after_delete);
 				}
 				$this->_redirected = 1;
 				$this->state = "delete";
 			}
 			else {
 				if (isset($this->on_fail_delete)) {
-					$fnc = $this->on_fail_delete;
-					$fnc();
+					call_user_func($this->on_fail_delete);
 				}
 				if (isset($this->on_fail_delete)) {
-					$fnc = $this->on_fail_delete;
-					$fnc();
+					call_user_func($this->on_fail_delete);
 				}
 				$this->_redirected = 0;
 				$this->state = "error";
@@ -470,8 +468,7 @@ class dbForm {
 				if ($_GET[$code_public] == "") //insert
 				{
 					if (isset($this->on_before_insert)) {
-						$fnc = $this->on_before_insert;
-						$this->before_insert_result = $fnc();
+						$this->before_insert_result = call_user_func($this->on_before_insert);
 						if ($this->before_insert_result) {
 							$this->_error_message = $this->before_insert_result;
 							$error_occured = true;
@@ -479,24 +476,20 @@ class dbForm {
 					}
 					if (!$error_occured && $this->insert()) {
 						if (isset($this->on_success_insert)) {
-							$fnc = $this->on_success_insert;
-							$fnc();
+							call_user_func($this->on_success_insert);
 						}
 						if (isset($this->on_after_insert)) {
-							$fnc = $this->on_after_insert;
-							$fnc();
+							call_user_func($this->on_after_insert);
 						}
 						$this->_redirected = 1;
 						$this->state = "insert";
 					}
 					else {
 						if (isset($this->on_fail_insert)) {
-							$fnc = $this->on_fail_insert;
-							$fnc();
+							call_user_func($this->on_fail_insert);
 						}
 						if (isset($this->on_after_insert)) {
-							$fnc = $this->on_after_insert;
-							$fnc();
+							call_user_func($this->on_after_insert);
 						}
 						$this->_redirected = 0;
 						$this->state = "error";
@@ -507,8 +500,7 @@ class dbForm {
 				{
 					$error_occured = false;
 					if (isset($this->on_before_update)) {
-						$fnc = $this->on_before_update;
-						$this->before_update_result = $fnc(); //error message
+						$this->before_update_result = call_user_func($this->on_before_update); //error message
 						if ($this->before_update_result) {
 							$this->_error_message = $this->before_update_result;
 							$error_occured = true;
@@ -516,24 +508,20 @@ class dbForm {
 					}
 					if (!$error_occured && $this->update()) {
 						if (isset($this->on_success_update)) {
-							$fnc = $this->on_success_update;
-							$fnc();
+							call_user_func($this->on_success_update);
 						}
 						if (isset($this->on_after_update)) {
-							$fnc = $this->on_after_update;
-							$fnc();
+							call_user_func($this->on_after_update);
 						}
 						$this->_redirected = 1;
 						$this->state = "update";
 					}
 					else {
 						if (isset($this->on_fail_update)) {
-							$fnc = $this->on_fail_update;
-							$fnc();
+							call_user_func($this->on_fail_update);
 						}
 						if (isset($this->on_after_update)) {
-							$fnc = $this->on_after_update;
-							$fnc();
+							call_user_func($this->on_after_update);
 						}
 						$this->_redirected = 0;
 						$this->state = "error";
@@ -1898,10 +1886,10 @@ class dbForm {
 			}
 		}
 	}
-}
-
-function error_occured($errorno, $errorstr) {
-	throw new \Exception($errorstr);
+	
+	private static function error_occured($errorno, $errorstr) {
+		throw new \Exception($errorstr);
+	}
 }
 
 ?>
