@@ -44,7 +44,7 @@ class dbView {
 	public $button_onclicks;
 	public $label_array;
 	private $query_row;
-	private $direction_array;
+	private $ltr_direction_array;
 	private $alignment_array;
 	private $odd_row = true;
 	private $content_array;
@@ -65,13 +65,13 @@ class dbView {
     	    $this->empty_result = true;
 	}
 
-	public function addRow($description, $content, $direction = "rtl", $alignment = "right") {
+	public function addRow($description, $content, $ltr_direction = false, $alignment = "right") {
 		$this->description_array[$this->row_count] = $description;
 		$this->content_array[$this->row_count] = $content;
-		if ($direction != "rtl")
-		    $this->direction_array = $direction;
+		if ($ltr_direction)
+		    $this->ltr_direction_array[$this->row_count] = true;
 		if ($alignment != "right")
-		    $this->alignment_array = $alignment;
+		    $this->alignment_array[$this->row_count] = $alignment;
 		$this->row_count ++;
 		return ($this->row_count - 1);
 	}
@@ -213,8 +213,10 @@ class dbView {
         if ($this->empty_result)
             return(false);
         $style="";
-        if ($this->direction_array[$col_num] != "")
-            $style .= "direction: {$this->direction_array[$col_num]};";
+        if ($this->ltr_direction_array[$col_num]) {
+            $style .= "direction: ltr;";
+			$style .= "unicode-bidi: bidi-override;";
+		}
         if ($this->alignment_array[$col_num] != "")
             $style .= "text-align: {$this->alignment_array[$col_num]};";
         if ($style != "")
@@ -228,7 +230,7 @@ class dbView {
     		$field_name = substr($content, $pos + 3, $i - $pos - 3);
     	    $content = substr($content, 0, $pos) . $this->query_row[$field_name] . substr($content, $i + 1, strlen($content));
     	}
-    	while (($pos = strpos($content, '#u#')) !== false) {  // #u#function_name#field_name_1#field_name_2#...#field_name_n# Call the function with fields as its parameters and outputs its returned value.
+    	while (($pos = strpos($content, '#u#')) !== false) {  // #u#function_name#param_count#field_name_1#field_name_2#...#field_name_n# Call the function with fields as its parameters and outputs its returned value.
     		$i = $pos + 3;
     		$pos2 = $this->_next_sign($content, $i);
     		$i = $pos2 + 1;
