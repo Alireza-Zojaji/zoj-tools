@@ -21,6 +21,10 @@
 // 17 Dec 2016: Added show_date_month_input function.
 // 17 Dec 2016: Fixed a bug in show_date_input function related to start year.
 // 02 Oct 2018: Added onchange parameter to show_date_input function.
+// 12 Mar 2025: Chnaged for utf-8 character set.
+// 14 Mar 2025: Fixed date and time for MySqli data types.
+// 16 Mar 2025: Migrated from PHP 5.x to PHP 8.2 .
+// 22 Mar 2025: Changed to composer compatible.
 
 namespace ZojTools\dateTimeTools;
 
@@ -52,26 +56,26 @@ class dateTimeFormat extends shamsiDate {
     	return (self::shtom($HegiraDate, 'ymd', '/', false) . ' ' . $Time24);
     }
     
-    public static function get_farsi_date($field_value, $is_input_string = true, $farsi = true) //set is_input_string to false when input is timestamp
+    public static function get_farsi_date($time_input, $farsi = true) //set is_input_string to false when input is timestamp
     {
-    	//echo $field_value;
-    	//echo $is_input_string;
-    	if ($field_value == "") return ("");
-    	else if ($is_input_string) $time_stamp = self::str_to_time($field_value);
-    	else $time_stamp = $field_value;
-    	if (strpos($_SERVER["HTTP_USER_AGENT"], "MSIE") !== false) $date_str = self::mtosh(date("Y-m-d", $time_stamp));
-    	else $date_str = self::mtosh(date("Y-m-d", $time_stamp) , true);
+    	$timestamp = strtotime($time_input);
+    	if ($timestamp < 0 || $time_input == "0000-00-00 00:00:00") 
+    	    return ("");
+    	if (strpos($_SERVER["HTTP_USER_AGENT"], "MSIE") !== false) 
+    	    $date_str = self::mtosh(date("Y-m-d", $timestamp));
+    	else 
+    	    $date_str = self::mtosh(date("Y-m-d", $timestamp) , true);
     	if ($farsi) {
     		$date_str = farsiNumber::number_en2fa($date_str);
     	}
     	return ($date_str);
     }
     
-    public static function get_farsi_time($field_value, $is_input_string = true, $farsi = true) {
-    	if ($field_value == "") return ("");
-    	else if ($is_input_string) $time_stamp = self::str_to_time($field_value);
-    	else $time_stamp = $field_value;
-    	$time_str = date("H:i", $time_stamp);
+    public static function get_farsi_time($time_input, $farsi = true) {
+    	$timestamp = strtotime($time_input);
+    	if ($timestamp < 0 || $time_input == "0000-00-00 00:00:00") 
+    	    return ("");
+    	$time_str = date("H:i", $timestamp);
     	if ($farsi) {
     		$time_str = farsiNumber::number_en2fa($time_str);
     	}
@@ -282,8 +286,8 @@ class dateTimeFormat extends shamsiDate {
     public static function str2time($timestr) {
     	//  $items=preg_split('/-/',$timestr);
     	$itemss = preg_split('/\s+/', $timestr);
+/*
     	reset($itemss);
-
     	foreach ($itemss as $key => $val) {
     		if (strlen($val) == 4) $y = $val;
     		if (strlen($val) == 3) $m = $val;
@@ -291,7 +295,9 @@ class dateTimeFormat extends shamsiDate {
     		if ($key >= 3) $t = $val;
     	}
     	//  return(strtotime("$y $m $d $t"));
-    	return (strtotime("$m $d $y $t"));
+    	return (strtotime(strtotime("$m $d $y $t"));
+*/
+        return(strtotime($timestr));
     }
     
     public static function day_of_week($Day) {

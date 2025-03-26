@@ -513,10 +513,8 @@ class dbGrid {
 			$field_name = substr($content, $pos + 3, $i - $pos - 3);
 			if ($this->query_row[$field_name] == "")
 				$time_str = "";
-			else {
-				$time_stamp = dateTimeFormat::str2time($this->query_row[$field_name]);
-				$time_str = dateTimeFormat::get_farsi_time($time_stamp, false, true);
-			}
+			else
+				$time_str = dateTimeFormat::get_farsi_time($this->query_row[$field_name], true);
 			$content = substr($content, 0, $pos) . $time_str . substr($content, $i + 1, strlen($content));
 		}
 		while (($pos = strpos($content, '#T#')) !== false) {
