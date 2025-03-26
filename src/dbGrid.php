@@ -21,6 +21,8 @@
 // 22 Mar 2025: Changed to composer compatible.
 // 26 Mar 2025: Some optimizations applied.
 // 26 Mar 2025: Added addColumn method.
+// 26 Mar 2025: Added show_first & show_last methods.
+// 26 Mar 2025: Deleted last parameter (show_disabled) from show_prior & show_next methods.
 
 namespace ZojTools;
 
@@ -99,13 +101,13 @@ class dbGrid {
 		$title_spanned = false,
 		$span_col_count = 1
 	) {
-		global $$page_var;
+		//global $$page_var;
         $this->db_link = $db_link;
 		$this->max_page_link = $max_page_link;
 		$this->page_var = $page_var;
 		$this->query = $query;
 		$this->page_number = $_GET[$this->page_var];
-		if ($this->page_number == "") 
+		if (! isset($this->page_number) || $this->page_number == "") 
             $this->page_number = 1;
 		$this->tb_width = "100%";
 		$this->show_header = true;
@@ -276,7 +278,7 @@ class dbGrid {
 		$max = $min + $this->max_page_link;
 		if ($max > $this->max_page) 
 			$max = $this->max_page;
-		for ($page = $min;$page <= $max;$page++) {
+		for ($page = $min; $page <= $max; $page++) {
 			if ($page != $this->page_number) {
 				$qs = $this->query_string();
 				$qstr = $this->caller_file_name . '?' . $qs . ($qs == "" ? "" : "&") . $this->page_var . '=' . $page;
@@ -287,15 +289,16 @@ class dbGrid {
 					echo ' style="' . $style . '"';
 				if ($class) 
 					echo ' class="' . $class . '"';
-				echo '>' . $page . '</a>';
+				echo '>' . farsiNumber::number_en2fa($page) . '</a>';
 			}
-			else echo '<span style="font-size: 135%"><b>' . $page . '</b></span>';
+			else 
+				echo '<span style="font-size: 135%"><b>' . farsiNumber::number_en2fa($page) . '</b></span>';
 			echo '&nbsp&nbsp';
 		}
 	}
 
 	//show prior page link
-	function show_prior($message, $style = '', $class = '', $show_disabled = false) {
+	public function show_prior($message, $style = '', $class = '') {
 		if ($this->have_prior) {
 			$qs = $this->query_string();
 			$qstr = $this->caller_file_name . '?' . $qs . ($qs == "" ? "" : "&") . $this->page_var . '=' . ($this->page_number - 1);
@@ -308,12 +311,12 @@ class dbGrid {
 				echo ' class="' . $class . '"';
 			echo '>' . $message . '</a>';
 		}
-		else if ($show_disabled) 
+		else
 			echo $message;
 	}
 
 	//show next page link
-	function show_next($message, $style = '', $class = '', $show_disabled = false) {
+	function show_next($message, $style = '', $class = '') {
 		if ($this->have_next) {
 			$qs = $this->query_string();
 			$qstr = $this->caller_file_name . '?' . $qs . ($qs == "" ? "" : "&") . $this->page_var . '=' . ($this->page_number + 1);
@@ -326,7 +329,35 @@ class dbGrid {
 				echo ' class="' . $class . '"';
 			echo '>' . $message . '</a>';
 		}
-		else if ($show_disabled) 
+		else
+			echo $message;
+	}
+
+	public function show_first($message, $style = '', $class = '') {
+		if ($this->have_prior) {
+			$qs = $this->query_string();
+			$qstr = $this->caller_file_name . '?' . $qs . ($qs == "" ? "" : "&") . $this->page_var . '=1';
+			echo '<a href="' . $qstr . '"';
+			if ($style) 
+				echo ' style="' . $style . '"';
+			if ($class) 
+				echo ' class="' . $class . '"';
+			echo '>' . $message . '</a>';
+		} else
+			echo $message;
+	}
+
+	public function show_last($message, $style = '', $class = '') {
+		if ($this->have_next) {
+			$qs = $this->query_string();
+			$qstr = $this->caller_file_name . '?' . $qs . ($qs == "" ? "" : "&") . $this->page_var . '=' . ($this->max_page);
+			echo '<a href="' . $qstr . '"';
+			if ($style) 
+				echo ' style="' . $style . '"';
+			if ($class) 
+				echo ' class="' . $class . '"';
+			echo '>' . $message . '</a>';
+		} else
 			echo $message;
 	}
 

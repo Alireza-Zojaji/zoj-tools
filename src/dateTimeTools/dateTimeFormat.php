@@ -73,7 +73,6 @@ class dateTimeFormat extends shamsiDate {
     	else $time_stamp = $field_value;
     	$time_str = date("H:i", $time_stamp);
     	if ($farsi) {
-    		require_once ("tools9.php");
     		$time_str = farsiNumber::number_en2fa($time_str);
     	}
     	return ($time_str);
