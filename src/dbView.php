@@ -50,7 +50,10 @@ class dbView {
 	private $content_array;
 
 	//consructor
-	public function __construct($db_link, $query) {
+	public function __construct(
+		$db_link, 
+		$query
+	) {
 		$this->query = $query;
 		$this->db_link = $db_link;
 		$this->tb_width = "100%";
@@ -65,7 +68,12 @@ class dbView {
     	    $this->empty_result = true;
 	}
 
-	public function addRow($description, $content, $ltr_direction = false, $alignment = "right") {
+	public function addRow(
+		$description, 
+		$content, 
+		$ltr_direction = false, 
+		$alignment = "right"
+	) {
 		$this->description_array[$this->row_count] = $description;
 		$this->content_array[$this->row_count] = $content;
 		if ($ltr_direction)
