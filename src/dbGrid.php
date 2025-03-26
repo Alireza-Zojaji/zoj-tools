@@ -27,8 +27,6 @@ namespace ZojTools;
 use ZojTools\farsiTools\farsiNumber;
 use ZojTools\numberTools\formatNumber;
 use ZojTools\dateTimeTools\dateTimeFormat;
-use ZojTools\dbBase\dbBase;
-use ZojTools\stringTools\stringTools;
 
 //This class shows a data table and manages it
 class dbGrid {
@@ -84,6 +82,7 @@ class dbGrid {
     public $caller_file_name;
     public $cellpadding;
     public $td_height_array;
+	public $span_col_count;
 	private $query_row;
 	private $query_table;
 	private $row_num;
@@ -92,11 +91,13 @@ class dbGrid {
 
 	//constructor
 	public function __construct(
-		$db_link, $query, 
+		$db_link, 
+		$query, 
 		$lines_per_page = 10, 
-		$title_spanned = false, 
 		$page_var = "page", 
-		$max_page_link = 10
+		$max_page_link = 10,
+		$title_spanned = false,
+		$span_col_count = 1
 	) {
 		global $$page_var;
         $this->db_link = $db_link;
@@ -112,8 +113,9 @@ class dbGrid {
 		$this->query_table = $this->query($this->query);
 		$this->row_count = mysqli_num_rows($this->query_table);
 		$this->title_spanned = $title_spanned;
+		$this->span_col_count = $span_col_count;
 		if ($this->title_spanned) 
-            $this->max_page = ceil($this->row_count / ($this->lines_per_page * $this->col_count));
+            $this->max_page = ceil($this->row_count / ($this->lines_per_page * $this->span_col_count));
 		else 
             $this->max_page = ceil($this->row_count / ($this->lines_per_page));
 		if ($this->max_page == 0) {
@@ -136,8 +138,8 @@ class dbGrid {
 	public function addColumn(
 		$title,
 		$content,
-		$width = "",
-		$alignment = "center"
+		$alignment = "center",
+		$width = ""
 	) {
 		$this->title_array[$this->col_count] = $title;
 		$this->td_align_array[$this->col_count] = $alignment;
@@ -149,7 +151,15 @@ class dbGrid {
 
 	//internal use
 	public function query($query) {
-        $error_rep = error_reporting(E_ALL);
+		try {
+			$result = mysqli_query($this->db_link, $query);
+		}
+		catch(\Exception $e) {
+			$result = false;
+		}
+		return ($result);
+        /*
+		$error_rep = error_reporting(E_ALL);
         $old_handler = set_error_handler("error_occured", E_WARNING);
         $this->query = $query;
         try {
@@ -162,6 +172,7 @@ class dbGrid {
         restore_error_handler();
         //        set_error_handler($old_handler,E_WARNING);
         return ($result);
+		*/
 	}
 
 	function _do_submit() {
