@@ -236,6 +236,7 @@ class dbForm {
 		$this->redirect = true;
 		$this->general_error_message = "خطا";
 		$this->debug = false;
+		$this->star_source = '<span class="star">*</span>';
 	}
 
 	public function addField(
