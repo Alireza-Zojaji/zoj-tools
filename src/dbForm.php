@@ -261,7 +261,8 @@ class dbForm {
 	}
 
 	private function correct_quote_char() {
-		foreach ($_POST as & $val) $val = str_replace("'", "''", $val);
+		foreach ($_POST as & $val) 
+			$val = str_replace("'", "''", $val);
 	}
 
 	private function correct_table_name() {

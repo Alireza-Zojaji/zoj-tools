@@ -1,5 +1,7 @@
 <?
 // 19 Mar 2025: Developing completed!
+// 06 Apr 2025: Fixed a bug in #t#
+// 08 Apr 2025: Added #v# for passing $this parameter to calling function.
 
 namespace ZojTools;
 
@@ -257,6 +259,27 @@ class dbView {
     		$content = substr($content, 0, $pos) . $function_result . substr($content, $i + 1, strlen($content));
     		unset($param);
     	}
+    	while (($pos = strpos($content, '#v#')) !== false) {  // #v#function_name#param_count#field_name_1#field_name_2#...#field_name_n# 
+				// Call the function with fields as its parameters and outputs its returned value. (The first parameter is $this)
+    		$i = $pos + 3;
+    		$pos2 = $this->_next_sign($content, $i);
+    		$i = $pos2 + 1;
+    		$pos3 = $this->_next_sign($content, $i);
+    		$first = $pos3 + 1;
+    		$func = substr($content, $pos + 3, $pos2 - $pos - 3);
+    		$param_count = substr($content, $pos2 + 1, $pos3 - $pos2 - 1);
+			$param[] = $this;
+    		for ($count = 1; $count <= $param_count; $count++) {
+    			$i = $first;
+    			$second = $this->_next_sign($content, $i);
+    			$field_name = substr($content, $first, $second - $first);
+    			$param[] = $this->query_row[$field_name];
+    			$first = $second + 1;
+    		}
+    		$function_result = call_user_func_array($func, $param);
+    		$content = substr($content, 0, $pos) . $function_result . substr($content, $i + 1, strlen($content));
+    		unset($param);
+    	}
     	while (($pos = strpos($content, '#b#')) !== false) { // #b#label_number#field_name# Outputs the element number field value of the label_array[label_number] array.
     		$i = $pos + 3;
     		$pos2 = $this->_next_sign($content, $i);
@@ -289,6 +312,12 @@ class dbView {
     		$this->_next_sign($content, $i);
     		$field_name = substr($content, $pos + 3, $i - $pos - 3);
     		$content = substr($content, 0, $pos) . formatNumber::split($this->query_row[$field_name]) . substr($content, $i + 1, strlen($content));
+    	}
+    	while (($pos = strpos($content, '#p#')) !== false) { // #p#field_name# Outputs the field value splitted 3 digits in farsi number.
+    		$i = $pos + 3;
+    		$this->_next_sign($content, $i);
+    		$field_name = substr($content, $pos + 3, $i - $pos - 3);
+    		$content = substr($content, 0, $pos) . farsiNumber::number_en2fa(formatNumber::split($this->query_row[$field_name])) . substr($content, $i + 1, strlen($content));
     	}
     	while (($pos = strpos($content, '#D#')) !== false) { // #D#field_name# Outputs the field value converted to date.
     		$i = $pos + 3;
@@ -329,13 +358,10 @@ class dbView {
     		$i = $pos + 3;
     		$this->_next_sign($content, $i);
     		$field_name = substr($content, $pos + 3, $i - $pos - 3);
-    		if ($this->query_row[$field_name] == "") {
+    		if ($this->query_row[$field_name] == "")
     			$time_str = "";
-    		}
-    		else {
-    			$time_stamp = dateTimeFormat::str2time($this->query_row[$field_name]);
-    			$time_str = dateTimeFormat::get_farsi_time($time_stamp, false, true);
-    		}
+    		else
+    			$time_str = dateTimeFormat::get_farsi_time($this->query_row[$field_name], true);
     		$content = substr($content, 0, $pos) . $time_str . substr($content, $i + 1, strlen($content));
     	}
     	while (($pos = strpos($content, '#T#')) !== false) { // #T#field_name# Outputs the field value converted to English character time.

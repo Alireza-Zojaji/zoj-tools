@@ -23,6 +23,9 @@
 // 26 Mar 2025: Added addColumn method.
 // 26 Mar 2025: Added show_first & show_last methods.
 // 26 Mar 2025: Deleted last parameter (show_disabled) from show_prior & show_next methods.
+// 04 Apr 2025: Added THEAD & TBODY tags to the tables.
+// 05 Apr 2025: Added #p# for Farsi number splitted 3 digits.
+// 08 Apr 2025: Added #v# for passing $this parameter to calling function.
 
 namespace ZojTools;
 
@@ -87,7 +90,7 @@ class dbGrid {
 	public $span_col_count;
 	private $query_row;
 	private $query_table;
-	private $row_num;
+	public $row_num;
 	private $page_var;
 	private $no_data_message;
 
@@ -177,7 +180,7 @@ class dbGrid {
 		*/
 	}
 
-	function _do_submit() {
+	private function _do_submit() {
 		for ($i = 0;$i <= $this->col_count;$i++) {
 			if (($pos = strpos($this->col_array[$i], "#c#")) !== false) {
 				$j = $pos + 3;
@@ -227,7 +230,7 @@ class dbGrid {
 	}
 
 	//internal use
-	function query_string() {
+	private function query_string() {
 		//      global $QUERY_STRING;
 		$qstr = $_SERVER["QUERY_STRING"];
 		$page_pos = strpos($qstr, "&page=");
@@ -256,7 +259,7 @@ class dbGrid {
 	}
 
 	//internal use
-	function initialize_grid() {
+	private function initialize_grid() {
 		if ($this->submit_label == "") 
 			$this->submit_label = "Submit";
 		$found_form = false;
@@ -270,7 +273,7 @@ class dbGrid {
 	}
 
 	//shows link for page numbers
-	function show_page_link($style = '', $class = '') {
+	public function show_page_link($style = '', $class = '') {
 		$step = (int)$this->max_page_link / 2;
 		$min = $this->page_number - $step;
 		if ($min < 1) 
@@ -316,7 +319,7 @@ class dbGrid {
 	}
 
 	//show next page link
-	function show_next($message, $style = '', $class = '') {
+	public function show_next($message, $style = '', $class = '') {
 		if ($this->have_next) {
 			$qs = $this->query_string();
 			$qstr = $this->caller_file_name . '?' . $qs . ($qs == "" ? "" : "&") . $this->page_var . '=' . ($this->page_number + 1);
@@ -362,7 +365,7 @@ class dbGrid {
 	}
 
 	//shows defined code for all rows
-	function show_content($content, $return = false) {
+	public function show_content($content, $return = false) {
 		$this->row_num = 1 + ($this->page_number - 1) * $this->lines_per_page;
 		if ($this->title_spanned) 
 			mysqli_data_seek($this->query_table, $this->col_count * ($this->row_num - 1));
@@ -377,7 +380,7 @@ class dbGrid {
 	}
 
 	//returns defined code for all rows
-	function get_content($content) {
+	public function get_content($content) {
 		$this->row_num = 1 + ($this->page_number - 1) * $this->lines_per_page;
 		if ($this->title_spanned) 
 			mysqli_data_seek($this->query_table, $this->col_count * ($this->row_num - 1));
@@ -394,7 +397,7 @@ class dbGrid {
 	}
 
 	//internal use
-	function _show_content($content, $col_num = - 1, $return = false) {
+	private function _show_content($content, $col_num = - 1, $return = false) {
 		$empty = false;
 		while (($pos = strpos($content, '#g#')) !== false) {
 			$i = $pos + 3;
@@ -417,6 +420,29 @@ class dbGrid {
 			$first = $pos3 + 1;
 			$func = substr($content, $pos + 3, $pos2 - $pos - 3);
 			$param_count = substr($content, $pos2 + 1, $pos3 - $pos2 - 1);
+			for ($count = 1;$count <= $param_count;$count++) {
+				$i = $first;
+				$this->_next_sign($content, $i);
+				$second = $i;
+				$field_name = substr($content, $first, $second - $first);
+				$param[] = $this->query_row[$field_name];
+				$first = $second + 1;
+			}
+			$function_result = call_user_func_array($func, $param);
+			$content = substr($content, 0, $pos) . $function_result . substr($content, $i + 1, strlen($content));
+			unset($param);
+		}
+		while (($pos = strpos($content, '#v#')) !== false) {
+			$i = $pos + 3;
+			$this->_next_sign($content, $i);
+			$pos2 = $i;
+			$i = $pos2 + 1;
+			$this->_next_sign($content, $i);
+			$pos3 = $i;
+			$first = $pos3 + 1;
+			$func = substr($content, $pos + 3, $pos2 - $pos - 3);
+			$param_count = substr($content, $pos2 + 1, $pos3 - $pos2 - 1);
+			$param[] = $this;
 			for ($count = 1;$count <= $param_count;$count++) {
 				$i = $first;
 				$this->_next_sign($content, $i);
@@ -468,6 +494,12 @@ class dbGrid {
 			$this->_next_sign($content, $i);
 			$field_name = substr($content, $pos + 3, $i - $pos - 3);
 			$content = substr($content, 0, $pos) . formatNumber::split($this->query_row[$field_name]) . substr($content, $i + 1, strlen($content));
+		}
+		while (($pos = strpos($content, '#p#')) !== false) {
+			$i = $pos + 3;
+			$this->_next_sign($content, $i);
+			$field_name = substr($content, $pos + 3, $i - $pos - 3);
+			$content = substr($content, 0, $pos) . farsiNumber::number_en2fa(formatNumber::split($this->query_row[$field_name])) . substr($content, $i + 1, strlen($content));
 		}
 		while (($pos = strpos($content, '#o#')) !== false) {
 			$i = $pos + 3;
@@ -593,7 +625,7 @@ class dbGrid {
 	}
 
 	//internal use
-	function _show_table($start = 1) {
+	private function _show_table($start = 1) {
 		if ($start != 0) {
 			echo '<table';
 			if ($this->tb_class) 
@@ -616,8 +648,17 @@ class dbGrid {
 		echo "\n";
 	}
 
+	private function _show_tbody($start = 1) {
+		if ($start != 0) {
+			echo '<tbody';
+			echo '>';
+		}
+		else echo '</tbody>';
+		echo "\n";
+	}
+
 	//internal use
-	function _show_td($col, $start = 1, $col_span = 1) {
+	private function _show_td($col, $start = 1, $col_span = 1) {
 		if ($start != 0) {
 			echo '<td';
 			if ($this->td_width_array[$col]) 
@@ -647,7 +688,7 @@ class dbGrid {
 	}
 
 	//internal use
-	function _show_tr($bg_color, $start = 1) {
+	private function _show_tr($bg_color, $start = 1) {
 		if ($start != 0) {
 			echo '<tr';
 			if ($bg_color) 
@@ -662,15 +703,31 @@ class dbGrid {
 		echo "\n";
 	}
 
+	//internal use
+	private function _show_thead($bg_color, $start = 1) {
+		if ($start != 0) {
+			echo '<thead';
+			if ($bg_color) 
+				echo ' bgcolor="' . $bg_color . '"';
+			if ($this->tr_style) 
+				echo ' style="' . $this->tr_style . '"';
+			if ($this->tr_class) 
+				echo ' class="' . $this->tr_class . '"';
+			echo '>';
+		}
+		else echo '</thead>';
+		echo "\n";
+	}
+
 	//shows the table
-	function show_grid() {
+	public function show_grid() {
 		$this->initialize_grid();
 		if ($this->has_form) {
 			echo '<form method="POST" action="" style="margin-top: 0; margin-bottom: 0">';
 		}
 		$this->_show_table();
 		if ($this->show_header) {
-			$this->_show_tr($this->tr_head_bgcolor);
+			$this->_show_thead($this->tr_head_bgcolor);
 			if ($this->title_spanned) {
 				$this->_show_td(0, 1, $this->col_count);
 				if ($this->tr_head_color) 
@@ -689,7 +746,7 @@ class dbGrid {
 					echo '</font>';
 				$this->_show_td("", 0);
 			}
-			$this->_show_tr("", 0);
+			$this->_show_thead("", 0);
 		}
 		$even = false;
 		$row = 1;
@@ -710,6 +767,7 @@ class dbGrid {
 			echo $this->no_data_message;
 			echo "</td></tr>";
 		}
+		$this->_show_tbody(1);
 		while (($this->query_row = mysqli_fetch_array($this->query_table)) && ($row <= $this->lines_per_page)) {
 			if ($even) {
 				$bgcolor = $this->tr_even_bgcolor;
@@ -734,6 +792,7 @@ class dbGrid {
 			$this->row_num++;
 			$row++;
 		}
+		$this->_show_tbody(0);
 		if ($this->has_form) {
 			echo '<tr><td align="center" colspan="' . $this->col_count . '">';
 			echo '<input type="submit" name="_submit" value="' . $this->submit_label . '"';
