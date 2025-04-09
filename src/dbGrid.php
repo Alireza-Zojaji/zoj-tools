@@ -26,7 +26,7 @@
 // 04 Apr 2025: Added THEAD & TBODY tags to the tables.
 // 05 Apr 2025: Added #p# for Farsi number splitted 3 digits.
 // 08 Apr 2025: Added #v# for passing $this parameter to calling function.
-
+// 08 Apr 2025: no_data_message & page_var changed to public.
 namespace ZojTools;
 
 use ZojTools\farsiTools\farsiNumber;
@@ -91,8 +91,8 @@ class dbGrid {
 	private $query_row;
 	private $query_table;
 	public $row_num;
-	private $page_var;
-	private $no_data_message;
+	public $page_var;
+	public $no_data_message;
 
 	//constructor
 	public function __construct(
