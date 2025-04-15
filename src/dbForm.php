@@ -64,6 +64,10 @@
 // 22 Mar 2025: Changed to composer compatible.
 // 23 Mar 2025: Added addField function to add new field easily.
 // 24 Mar 2025: Used call_user_func function for calling events instead of fnc function variable.
+// 13 Apr 2025: Added field_date_start_fix_year property to use a fix year as start year.
+// 13 Apr 2025: Removed auto_field_count property.
+// 13 Apr 2025: Some minor changes made in select function.
+// 13 Apr 2025: Added td_id property to assigning id to the cell containing fields.
 
 namespace ZojTools;
 
@@ -77,7 +81,7 @@ class dbForm {
 	public $debug;
 	public $_error_message;
 	public $_redirected;
-	public $_vars_set;
+	private $_vars_set;
 	public $after_buttons_html;
 	public $border;
 	public $border_color;
@@ -189,7 +193,6 @@ class dbForm {
 	public $star_pos;
 	public $star_source;
 	public $error_type;
-	public $auto_field_count;
 	public $identity_insert;
 	public $use_identity_insert;
 	public $before_delete_result;
@@ -214,6 +217,8 @@ class dbForm {
     public $field_date_start_year;
     public $field_date_end_year;
     public $field_class_array;
+	public $field_date_start_fix_year;
+	public $td_id;
 
 	//consructor
 	public function __construct(
@@ -228,7 +233,7 @@ class dbForm {
 		$this->table_name = $table_name;
 		$this->field_count = 0;
 		$this->general_error_message = "Error";
-		$this->star_pos = 'before title';
+		//$this->star_pos = 'before title';
 		$this->correct_table_name();
 		$this->correct_quote_char();
 		$this->show_star = $show_star;
@@ -294,25 +299,24 @@ class dbForm {
 		}
 		else {
 			$error_rep = error_reporting(E_ALL);
-			$old_handler = set_error_handler(['self', 'error_occured'], E_WARNING);
+			//$old_handler = set_error_handler(['self', 'error_occured'], E_WARNING);
 			$this->query = $query;
 			try {
 				$result = mysqli_query($this->db_link, $query);
-			}
-			catch(\Exception $e) {
+			} catch(\Exception $e) {
 				$result = false;
 			}
 			error_reporting($error_rep);
 			//restore_error_handler();
-	        set_error_handler($old_handler, E_WARNING);
+	        //set_error_handler($old_handler, E_WARNING);
 			return ($result);
 		}
 	}
 
-	//get the state of the form: cancel, insert, update, delete, or view(select)
+	//get the state of the form: cancel, insert, update, delete, or select
 	public function get_state() {
 		global $_POST, $_GET;
-		for ($i = 0;$i < $this->field_count;$i++) {
+		for ($i = 0; $i < $this->field_count; $i++) {
 			if ($_POST["submit"] != "") 
 				$this->field_value_array[$i] = $_POST[$this->field_name_array[$i]];
 			if (! $this->field_value_array[$i] && ($this->field_type_array[$i] == "I" || $this->field_type_array[$i] == "i")) 
@@ -335,13 +339,10 @@ class dbForm {
 				$this->state = "update";
 			}
 		}
-		else if ($_POST["delete"] != "") //delete
-		{
+		else if ($_POST["delete"] != "") { //delete
 			$this->state = "delete";
 		}
-		else
-		//select
-		{
+		else { //select
 			$this->state = "select";
 		}
 		return ($this->state);
@@ -349,10 +350,8 @@ class dbForm {
 
 	//do the operation of the form based on the state of the form
 	public function initialize() {
-		if ($this->auto_field_count) 
-			$this->field_count = count($this->field_name_array);
 		global $_POST, $_GET;
-		if (!$this->_vars_set && $_POST["submit"] != "") {
+		if (! $this->_vars_set && $_POST["submit"] != "") {
 			if (isset($this->on_submit)) {
 				call_user_func($this->on_submit);
 			}
@@ -463,7 +462,7 @@ class dbForm {
 				$this->_redirected = 0;
 				$this->state = "error";
 			}
-		}
+		} 
 		else if ($_POST["_submitted_"] != "") {
 			$this->error_type = '';
 			if (($error = $this->check_rules()) == - 1) { //no error
@@ -497,9 +496,7 @@ class dbForm {
 						$this->state = "error";
 					}
 				}
-				else
-				//update
-				{
+				else { //update
 					$error_occured = false;
 					if (isset($this->on_before_update)) {
 						$this->before_update_result = call_user_func($this->on_before_update); //error message
@@ -530,9 +527,7 @@ class dbForm {
 					}
 				}
 			}
-			else
-			//has error
-			{
+			else { //has error
 				$this->_redirected = 0;
 				if ($this->error_type == 'Repeat') 
 					$this->_error_message = $this->message_before . $this->redescription_array[$error] . $this->message_after;
@@ -546,8 +541,7 @@ class dbForm {
 					$this->_error_message = $this->message_before . $this->description_array[$error] . $this->message_after;
 			}
 		}
-		else //select
-		{
+		else { //select
 			if ($_GET[$this->code_var] != "" && !$this->not_initialize_fields) //not select for inserting
 				$this->select();
 			$this->state = "select";
@@ -593,17 +587,22 @@ class dbForm {
 		global $_POST, $_GET;
 		$table_name = $this->table_name;
 		$code_field = $this->code_field;
-		$value = $_GET[$this->code_var];
-		$query = "
-        SELECT * FROM $table_name WHERE $code_field='$value'
-        ";
-		if ($table = $this->query($query)) {
-			$row = mysqli_fetch_array($table);
-			for ($i = 0;$i < $this->field_count;$i++) if (!$this->not_in_table[$i]) $this->field_value_array[$i] = trim($row[$this->field_name_array[$i]]);
-			return (true);
-		}
-		else {
-			return (false);
+		if (isset($_GET[$this->code_var])) {
+			$value = $_GET[$this->code_var];
+			$query = "
+				SELECT * FROM $table_name WHERE $code_field='$value'
+			";
+			if ($table = $this->query($query)) {
+				$row = mysqli_fetch_array($table);
+				for ($i = 0;$i < $this->field_count;$i++) 
+					if (! $this->not_in_table[$i]) 
+						$this->field_value_array[$i] = trim($row[$this->field_name_array[$i]]);
+				return (true);
+			} else {
+				return (false);
+			}
+		} else {
+			return(false);
 		}
 	}
 
@@ -615,45 +614,47 @@ class dbForm {
 		$field_value_str = "";
 		$first = true;
         $query = '';
-		for ($i = 0;$i < $this->field_count;$i++) if (!$this->not_in_table[$i] && !$this->field_disabled_array[$i]) {
-			$empty = false;
-			if ($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") {
-				if ($_FILES[$this->field_name_array[$i]]['name']) {
-					if ($this->upload_db_array[$i]) {
-						$uploaded_file_content = file_get_contents($_FILES[$this->field_name_array[$i]]['tmp_name']);
-						$this->field_value_array[$i] = '0x'.bin2hex($uploaded_file_content);
+		for ($i = 0;$i < $this->field_count;$i++) 
+			if (!$this->not_in_table[$i] && !$this->field_disabled_array[$i]) {
+				$empty = false;
+				if ($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") {
+					if ($_FILES[$this->field_name_array[$i]]['name']) {
+						if ($this->upload_db_array[$i]) {
+							$uploaded_file_content = file_get_contents($_FILES[$this->field_name_array[$i]]['tmp_name']);
+							$this->field_value_array[$i] = '0x'.bin2hex($uploaded_file_content);
+						}
+						else {
+							if ($this->upload_file_name[$i] == '') 
+								$file_name = $_FILES[$this->field_name_array[$i]]['name'];
+							else {
+								$file_name = $_FILES[$this->field_name_array[$i]]['name'];
+								$ext = '';
+								$pos = strrpos($file_name, '.');
+								if ($pos !== false) 
+									$ext = substr($file_name, $pos, strlen($file_name));
+								if ($this->upload_file_without_extension) 
+									$file_name = $this->upload_file_name[$i];
+								else 
+									$file_name = $this->upload_file_name[$i] . $ext;
+							}
+							$directory_exists = false;
+							if (file_exists($this->upload_directory[$i])) 
+								$directory_exists = true;
+							else 
+								$directory_exists = mkdir($this->upload_directory[$i]);
+							if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) 
+								$file_name = stringTools::get_unique_id() . '_' . $file_name;
+							$file_created = move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'], $this->upload_directory[$i] . '\\' . $file_name);
+							if ($this->upload_save_in_db == "original") 
+								$this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
+							else 
+								$this->field_value_array[$i] = $file_name;
+						}
 					}
 					else {
-						if ($this->upload_file_name[$i] == '') $file_name = $_FILES[$this->field_name_array[$i]]['name'];
-						else {
-							$file_name = $_FILES[$this->field_name_array[$i]]['name'];
-							$ext = '';
-							$pos = strrpos($file_name, '.');
-							if ($pos !== false) 
-								$ext = substr($file_name, $pos, strlen($file_name));
-							if ($this->upload_file_without_extension) 
-								$file_name = $this->upload_file_name[$i];
-							else 
-								$file_name = $this->upload_file_name[$i] . $ext;
-						}
-						$directory_exists = false;
-						if (file_exists($this->upload_directory[$i])) 
-							$directory_exists = true;
-						else 
-							$directory_exists = mkdir($this->upload_directory[$i]);
-						if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) 
-							$file_name = stringTools::get_unique_id() . '_' . $file_name;
-						$file_created = move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'], $this->upload_directory[$i] . '\\' . $file_name);
-						if ($this->upload_save_in_db == "original") 
-							$this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
-						else 
-							$this->field_value_array[$i] = $file_name;
+						$this->field_value_array[$i] = "";
+						$empty = true;
 					}
-				}
-				else {
-					$this->field_value_array[$i] = "";
-					$empty = true;
-				}
 			}
 			if ($this->field_name_array != '' && !$empty) {
 				if (!$first) {
@@ -695,76 +696,79 @@ class dbForm {
 		$value = $_GET[$this->code_var];
 		$query = "UPDATE $table_name SET ";
 		$first = true;
-		for ($i = 0;$i < $this->field_count;$i++) if (!$this->not_in_table[$i] && !$this->field_disabled_array[$i]) {
-			$empty = false;
-			//          echo $this->field_value_array[$i].'c';
-			if ($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") {
-				if ($_FILES[$this->field_name_array[$i]]['name'] != "") {
-					if ($this->upload_db_array[$i]) {
-						if (!$first) 
-							$query .= ',';
-						$first = false;
-						$query .= $this->field_name_array[$i] . "=";
-						$uploaded_file_content = implode("", file($_FILES[$this->field_name_array[$i]]['tmp_name']));
-						//                $uploaded_file_content=file_get_contents($_FILES[$this->field_name_array[$i]]['tmp_name']);
-						$query .= '0x' . bin2hex($uploaded_file_content);
-					}
-					else {
-						$code_field = $this->code_field;
-						$value = $_GET[$this->code_var];
-						$__query = "SELECT " . $this->field_name_array[$i] . " FROM " . $this->table_name . " WHERE $code_field='$value'";
-						$__table = $this->query($__query);
-						$__row = mysqli_fetch_array($__table);
-						if ($__row[$this->field_name_array[$i]]) unlink($this->upload_dir_array[$i] . '/' . $__row[$this->field_name_array[$i]]);
-						//                $imagepath = time().'_'.rand(1,32000).'_'.$_FILES[$this->field_name_array[$i]]['name'];
-						//                move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'],$this->upload_dir_array[$i].'/'.$imagepath);
-						if ($this->upload_file_name[$i] == '') $file_name = $_FILES[$this->field_name_array[$i]]['name'];
-						else {
-							$file_name = $_FILES[$this->field_name_array[$i]]['name'];
-							$ext = '';
-							if ($pos = strrpos($file_name, '.') !== false) 
-								$ext = substr($file_name, $pos, strlen($file_name));
-							if ($this->upload_file_without_extension) 
-								$file_name = $this->upload_file_name[$i];
-							else 
-								$file_name = $this->upload_file_name[$i] . $ext;
+		for ($i = 0;$i < $this->field_count;$i++) {
+			if (!$this->not_in_table[$i] && !$this->field_disabled_array[$i]) {
+				$empty = false;
+				//          echo $this->field_value_array[$i].'c';
+				if ($this->show_type_array[$i] == "F" || $this->show_type_array[$i] == "f") {
+					if ($_FILES[$this->field_name_array[$i]]['name'] != "") {
+						if ($this->upload_db_array[$i]) {
+							if (!$first) 
+								$query .= ',';
+							$first = false;
+							$query .= $this->field_name_array[$i] . "=";
+							$uploaded_file_content = implode("", file($_FILES[$this->field_name_array[$i]]['tmp_name']));
+							//                $uploaded_file_content=file_get_contents($_FILES[$this->field_name_array[$i]]['tmp_name']);
+							$query .= '0x' . bin2hex($uploaded_file_content);
 						}
-						if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) 
-							$file_name = stringTools::get_unique_id() . '_' . $file_name;
-						move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'], $this->upload_directory[$i] . '/' . $file_name);
-						if ($this->upload_save_in_db == "original") 
-							$this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
-						else 
-							$this->field_value_array[$i] = $file_name;
+						else {
+							$code_field = $this->code_field;
+							$value = $_GET[$this->code_var];
+							$__query = "SELECT " . $this->field_name_array[$i] . " FROM " . $this->table_name . " WHERE $code_field='$value'";
+							$__table = $this->query($__query);
+							$__row = mysqli_fetch_array($__table);
+							if ($__row[$this->field_name_array[$i]]) 
+								unlink($this->upload_dir_array[$i] . '/' . $__row[$this->field_name_array[$i]]);
+							//                $imagepath = time().'_'.rand(1,32000).'_'.$_FILES[$this->field_name_array[$i]]['name'];
+							//                move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'],$this->upload_dir_array[$i].'/'.$imagepath);
+							if ($this->upload_file_name[$i] == '') 
+								$file_name = $_FILES[$this->field_name_array[$i]]['name'];
+							else {
+								$file_name = $_FILES[$this->field_name_array[$i]]['name'];
+								$ext = '';
+								if ($pos = strrpos($file_name, '.') !== false) 
+									$ext = substr($file_name, $pos, strlen($file_name));
+								if ($this->upload_file_without_extension) 
+									$file_name = $this->upload_file_name[$i];
+								else 
+									$file_name = $this->upload_file_name[$i] . $ext;
+							}
+							if (file_exists($this->upload_directory[$i] . '\\' . $file_name) && !$this->upload_allow_overwrite[$i]) 
+								$file_name = stringTools::get_unique_id() . '_' . $file_name;
+							move_uploaded_file($_FILES[$this->field_name_array[$i]]['tmp_name'], $this->upload_directory[$i] . '/' . $file_name);
+							if ($this->upload_save_in_db == "original") 
+								$this->field_value_array[$i] = $_FILES[$this->field_name_array[$i]]['name'];
+							else 
+								$this->field_value_array[$i] = $file_name;
+							if (!$first) 
+								$query .= ',';
+							$first = false;
+							$query .= $this->field_name_array[$i] . "=";
+							if ($this->field_unicode_array[$i]) 
+								$query .= "N";
+							$query .= "'" . $this->field_value_array[$i] . "'";
+						}
+					}
+					else $empty = true;
+				}
+				else {
+					if ($this->field_name_array[$i] != '' && ($this->field_value_array[$i] != '' || $this->show_type_array[$i] != "P")) {
 						if (!$first) 
 							$query .= ',';
 						$first = false;
+						if ($this->use_md5_array[$i]) 
+							$this->field_value_array[$i] = md5($this->field_value_array[$i]);
 						$query .= $this->field_name_array[$i] . "=";
-						if ($this->field_unicode_array[$i]) 
-							$query .= "N";
-						$query .= "'" . $this->field_value_array[$i] . "'";
+						if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) 
+							$query .= "'";
+						$query .= $this->field_value_array[$i];
+						if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) 
+							$query .= "'";
 					}
 				}
-				else $empty = true;
+				//          if ($i!=$this->field_count-1 && !$empty)
+				//            $query.=",";	
 			}
-			else {
-				if ($this->field_name_array[$i] != '' && ($this->field_value_array[$i] != '' || $this->show_type_array[$i] != "P")) {
-					if (!$first) 
-						$query .= ',';
-					$first = false;
-					if ($this->use_md5_array[$i]) 
-						$this->field_value_array[$i] = md5($this->field_value_array[$i]);
-					$query .= $this->field_name_array[$i] . "=";
-					if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) 
-						$query .= "'";
-					$query .= $this->field_value_array[$i];
-					if ($this->field_type_array[$i] == "S" || (($this->field_type_array[$i] == "D" || $this->field_type_array[$i] == "d") && $this->field_value_array[$i] != 'NULL')) 
-						$query .= "'";
-				}
-			}
-			//          if ($i!=$this->field_count-1 && !$empty)
-			//            $query.=",";
-			
 		}
 		$code_field = $this->code_field;
 		$value = $_GET[$this->code_var];
@@ -794,8 +798,7 @@ class dbForm {
 ?>
 <input type="hidden" name="_submitted_" value="1">
 <?
-		}
-		else {
+		} else {
 			if (!$this->dont_include_form_tag) {
 ?>
 </form>
@@ -863,6 +866,8 @@ class dbForm {
 			if ($col == 2 && $col_span == 1) 
 				$bg_color = $this->td2_bgcolor_array[$row];
 			echo '<td';
+			if ($this->td_id[$row] &&  $col == 2)
+				echo ' id="' . $this->td_id[$row] . '"';
 			if ($bg_color != '') 
 				echo ' bgcolor="' . $bg_color . '"';
 			if ($col == 1 && $this->td_width_1) 
@@ -1131,16 +1136,14 @@ class dbForm {
 		if ($this->field_value_array[$row] == 'NULL' || $this->field_value_array[$row] == '') {
 			$h = '';
 			$n = '';
-		}
-		else if ($this->field_value_array[$row] == 'Error') {
+		} else if ($this->field_value_array[$row] == 'Error') {
 			if ($_POST[$this->field_name_array[$row] . "_d"] != '') 
 				$this->field_time_date_part[$row] = $_POST[$this->field_name_array[$row] . "_d"];
 			$h = $this->field_name_array[$row] . "_h";
 			$n = $this->field_name_array[$row] . "_n";
 			$h = $_POST[$h];
 			$n = $_POST[$n];
-		}
-		else {
+		} else {
 			$time = strtotime($this->field_value_array[$row]);
 			$h = date('H', $time);
 			$n = date('i', $time);
@@ -1184,8 +1187,7 @@ class dbForm {
 		for ($i = $this->field_time_start_hour[$row]; $i <= $this->field_time_end_hour[$row];$i++) {
 			$ii = ($i < 10 ? '0' . $i : $i);
 ?>
-<option value="<?=$ii
-?>"<?=($h == $ii) ? " selected" : "" ?>><?=$ii ?></option>
+<option value="<?=$ii ?>"<?=($h == $ii) ? " selected" : "" ?>><?=$ii ?></option>
 <?
 		}
 		echo "</select>";
@@ -1223,8 +1225,7 @@ class dbForm {
 				for ($i = 0;$i <= 59;$i += $this->field_time_minute_step[$row]) {
 					$ii = ($i < 10 ? '0' . $i : $i);
 ?>
-<option value="<?=$ii
-?>"<?=($n == $ii) ? " selected" : "" ?>><?=$ii ?></option>
+<option value="<?=$ii ?>"<?=($n == $ii) ? " selected" : "" ?>><?=$ii ?></option>
 <?
 				}
 				break;
@@ -1242,34 +1243,33 @@ class dbForm {
 				$d = 0;
 				$m = 0;
 				$y = 0;
-			}
-			else {
+			} else {
 				$time_set = time() + 86400 * $this->default_date_value[$row];
 				$y = date("Y", $time_set);
 				$m = date("m", $time_set);
 				$d = date("d", $time_set);
 				dateTimeFormat::m2sh($y, $m, $d);
 			}
-		}
-		else if ($this->field_value_array[$row] == 'Error') {
+		} else if ($this->field_value_array[$row] == 'Error') {
 			$y = $this->field_name_array[$row] . "_y";
 			$m = $this->field_name_array[$row] . "_m";
 			$d = $this->field_name_array[$row] . "_d";
 			$y = $_POST[$y];
 			$m = $_POST[$m];
 			$d = $_POST[$d];
-		}
-		else {
-			//echo $this->field_value_array[$row];
-			//        $date_array=preg_split("/ /", $this->field_value_array[$row]);
-			//        $_date=$date_array[1].' '.$date_array[0].' '.$date_array[2];
-			//        $_date=strtodate($_date);
-			//        $date_str=mtosh($_date);
-			//        $d=substr($date_str,0,2);
-			//        $m=substr($date_str,3,2);
-			//        $y=substr($date_str,6,4);
+		} else {
+			/*
+			echo $this->field_value_array[$row];
+			        $date_array=preg_split("/ /", $this->field_value_array[$row]);
+			        $_date=$date_array[1].' '.$date_array[0].' '.$date_array[2];
+			        $_date=strtodate($_date);
+			        $date_str=mtosh($_date);
+			        $d=substr($date_str,0,2);
+			        $m=substr($date_str,3,2);
+			        $y=substr($date_str,6,4);
 			// changed for an unwanted error!!!:
-			//        $time_set=str2time($this->field_value_array[$row]);
+			        $time_set=str2time($this->field_value_array[$row]);
+			*/
 			$time_set = strtotime($this->field_value_array[$row]);
 			if ($time_set == "") 
 				$time_set = time();
@@ -1392,7 +1392,10 @@ class dbForm {
 ?>
 <option></option>
 <?
-		$_start = $y_now + $start_year;
+		if ($this->field_date_start_fix_year[$row])
+			$_start = $this->field_date_start_fix_year[$row];
+		else
+			$_start = $y_now + $start_year;
 		$_end = $y_now + $end_year;
 		if ($y < $_start && $y != 0) 
 			$_start = $y;
@@ -1877,8 +1880,7 @@ class dbForm {
 ?>
 <input type="image" name="delete" src="<?=$this->delete_image
 ?>" value="<?=$this->delete_caption
-?>" onclick="if (! confirm(<?=$this->delete_message
-?>)) return(false)" <?=($this->button_style ? 'style="' . $this->button_style . '"' : "") ?> <?=($this->button_class ? 'class="' . $this->button_class . '"' : '') ?>>&nbsp;
+?>" onclick="if (! confirm(<?=$this->delete_message ?>)) return(false);" <?=($this->button_style ? 'style="' . $this->button_style . '"' : "") ?> <?=($this->button_class ? 'class="' . $this->button_class . '"' : '') ?>>&nbsp;
 <?
 				}
 				if ($this->show_reset) {

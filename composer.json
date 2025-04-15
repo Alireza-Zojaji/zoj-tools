@@ -2,7 +2,7 @@
     "name": "alireza-zojaji/zoj-tools",
     "type": "library",
     "description": "PHP tools for handling forms & views",
-    "keywords": ["zj_tools", "dbView", "dbFrorm", "dbGrid"],
+    "keywords": ["zoj-tools", "dbView", "dbFrorm", "dbGrid"],
     "homepage": "http://github.com/",
     "license": "MIT",
     "authors": [

@@ -2,6 +2,7 @@
 // 19 Mar 2025: Developing completed!
 // 06 Apr 2025: Fixed a bug in #t#
 // 08 Apr 2025: Added #v# for passing $this parameter to calling function.
+// 14 Apr 2025: Added getContent method and changes made to _show_data method to accept getContent method.
 
 namespace ZojTools;
 
@@ -84,6 +85,10 @@ class dbView {
 		    $this->alignment_array[$this->row_count] = $alignment;
 		$this->row_count ++;
 		return ($this->row_count - 1);
+	}
+
+	public function getContent($content) {
+		return($this->_show_data(-1, false, $content));
 	}
 
 	public function execute($query) {
@@ -219,7 +224,7 @@ class dbView {
 	}
 
     //internal use
-    function _show_data($col_num) {
+    private function _show_data($col_num, $show = true, $content = "") {
         if ($this->empty_result)
             return(false);
         $style="";
@@ -229,11 +234,15 @@ class dbView {
 		}
         if ($this->alignment_array[$col_num] != "")
             $style .= "text-align: {$this->alignment_array[$col_num]};";
-        if ($style != "")
-            echo '<span style="'.$style.'">';
-        else
-            echo '<span>';
-        $content = $this->content_array[$col_num];
+        $final_result = "";
+		if ($show) {
+			if ($style != "")
+				$final_result .= '<span style="'.$style.'">';
+			else
+				$final_result .= '<span>';
+		}
+		if ($col_num != -1)
+        	$content = $this->content_array[$col_num];
     	while (($pos = strpos($content, '#f#')) !== false) { // #f#field_name# Outputs the field value.
     		$i = $pos + 3;
     		$this->_next_sign($content, $i);
@@ -411,10 +420,14 @@ class dbView {
     		    $content = substr($content, 0, $pos) . substr($content, $i + 1, strlen($content));
     	}
     	$content = str_replace("#q#", urlencode($_SERVER["QUERY_STRING"]) , $content);
-        echo $content;
-        echo '</span>';
-    	if ($content == "") 
-    	    echo "&nbsp;";
+        $final_result .= $content;
+		if ($show) {
+			if (! $content) 
+				$final_result .= "&nbsp;";
+			$final_result .= '</span>';
+			echo $final_result;
+		}
+		return($final_result);
     }
     
     private function _next_sign($content, &$i) {
